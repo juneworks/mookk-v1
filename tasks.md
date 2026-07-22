@@ -1,6 +1,6 @@
 # Mookk v1.0 초압축 개발 현황판 (Tasks.md)
 
-## 📌 전체 진행 상황: 20 / 21 완료 (95%)
+## 📌 전체 진행 상황: 21 / 21 완료 (100%)
 
 ---
 
@@ -13,7 +13,7 @@
 - [x] Supabase SQL Editor에서 5개 테이블 스키마 및 Auth Trigger DDL 전체 실행
 - [x] Next.js (App Router) + Tailwind + shadcn/ui 프로젝트 기본 뼈대 생성
 - [x] Supabase 브라우저용 / 서버용 클라이언트 유틸리티 파일 생성 (`utils/supabase`)
-- [ ] GitHub 푸시 및 Vercel 실서버 배포 연동 테스트
+- [x] GitHub 푸시 및 Vercel 실서버 배포 연동 테스트
 
 ### [Phase 2] 회원가입 및 역할(Role) 관리
 - [x] Supabase Auth 기반 이메일/비밀번호 회원가입 컴포넌트 구현

@@ -82,22 +82,30 @@ export default function Header({ initialUser }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-zinc-200 bg-white/80 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/80">
+    <header className="sticky top-0 z-50 w-full border-b border-[#203226]/12 bg-[#edfae0]/95 backdrop-blur-md dark:border-white/10 dark:bg-[#1c2b20]/95">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* 로고 영역 */}
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl font-bold tracking-wider text-primary">Mookk</span>
-            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+            <span 
+              className="text-2xl font-black tracking-wider text-[#203226] dark:text-[#edfae0]"
+              style={{ WebkitTextStroke: '0.7px currentColor' }}
+            >
+              MOOKK
+            </span>
+            <span className="rounded-full bg-[#203226]/10 px-2 py-0.5 text-[10px] font-bold text-[#203226] dark:bg-white/10 dark:text-[#edfae0]">
               v1.0
             </span>
           </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-            <Link href="/" className="hover:text-black dark:hover:text-white transition-colors">
-              프로젝트 탐색
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-[#203226]/70 dark:text-[#edfae0]/70">
+            <Link href="/" className="hover:text-[#203226] dark:hover:text-[#edfae0] transition-colors font-bold">
+              프로젝트
+            </Link>
+            <Link href="#" className="hover:text-[#203226] dark:hover:text-[#edfae0] transition-colors font-bold">
+              커뮤니티
             </Link>
             {user?.role === 'creator' && (
-              <Link href="/projects/create" className="hover:text-black dark:hover:text-white transition-colors">
+              <Link href="/projects/create" className="hover:text-[#203226] dark:hover:text-[#edfae0] transition-colors">
                 프로젝트 등록
               </Link>
             )}
@@ -108,30 +116,38 @@ export default function Header({ initialUser }: HeaderProps) {
         <div className="flex items-center gap-4">
           {user ? (
             <div className="flex items-center gap-4">
-              <div className="flex flex-col text-right hidden sm:flex">
-                <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              {/* 유저명과 역할을 1열로 배치하고 짙은 배경의 흰색 글자 박스 뱃지 처리 */}
+              <div className="flex items-center gap-2 hidden sm:flex">
+                <span className="text-sm font-semibold text-[#203226] dark:text-[#edfae0]">
                   {user.name}
                 </span>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                <span className="rounded bg-[#203226] text-white dark:bg-[#edfae0] dark:text-[#142017] px-2 py-0.5 text-[10px] font-bold tracking-wide">
                   {getRoleLabel(user.role)}
                 </span>
               </div>
-              <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary sm:hidden">
-                {user.name}
-              </span>
+              <div className="flex items-center gap-1.5 sm:hidden">
+                <span className="text-xs font-semibold text-[#203226] dark:text-[#edfae0]">
+                  {user.name}
+                </span>
+                <span className="rounded bg-[#203226] text-white dark:bg-[#edfae0] dark:text-[#142017] px-1.5 py-0.5 text-[9px] font-bold">
+                  {getRoleLabel(user.role)}
+                </span>
+              </div>
               <Link href={getMyPageLink()}>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="border-[#203226]/20 text-[#203226] hover:bg-[#203226]/5 dark:border-white/20 dark:text-[#edfae0] dark:hover:bg-white/5">
                   마이페이지
                 </Button>
               </Link>
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-[#203226]/80 hover:bg-[#203226]/5 dark:text-[#edfae0]/80 dark:hover:bg-white/5">
                 로그아웃
               </Button>
             </div>
           ) : (
             <div className="flex items-center gap-2">
               <Link href="/login">
-                <Button size="sm">로그인</Button>
+                <Button size="sm" className="bg-[#203226] text-[#d6f9b4] hover:bg-[#203226]/90 dark:bg-[#edfae0] dark:text-[#142017] dark:hover:bg-[#edfae0]/90 font-bold">
+                  로그인
+                </Button>
               </Link>
             </div>
           )}
