@@ -82,7 +82,7 @@ export default function Header({ initialUser }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[#203226]/12 bg-[#edfae0]/95 backdrop-blur-md dark:border-white/10 dark:bg-[#1c2b20]/95">
+    <header className="sticky top-0 z-50 w-full bg-white/85 backdrop-blur-md dark:bg-[#1c2b20]/95">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* 로고 영역 */}
         <div className="flex items-center gap-8">

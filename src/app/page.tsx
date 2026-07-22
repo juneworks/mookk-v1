@@ -76,7 +76,7 @@ export default async function Home() {
     <div className="flex flex-col min-h-screen bg-background text-[#203226]">
       
       {/* 1. Hero Section - Apple MacBook Air 스타일의 대담한 1단 타이포그래피 */}
-      <section className="w-full bg-background pt-28 pb-20 text-center">
+      <section className="w-full bg-[#edfae0] pt-28 pb-16 text-center">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-6">
           <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl md:text-7xl leading-tight">
             종이책의 가치,<br />
