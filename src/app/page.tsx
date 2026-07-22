@@ -79,12 +79,11 @@ export default async function Home() {
       <section className="w-full bg-[#edfae0] pt-28 pb-16 text-center">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-6">
           <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl md:text-7xl leading-tight">
-            종이책의 가치,<br />
-            독자와 작가가 함께 묶다
+            종이책을 사랑하는 사람들을<br />
+            한데 묶는 공간
           </h1>
           <p className="mx-auto max-w-xl text-base sm:text-lg text-[#203226]/80 leading-relaxed font-light">
-            세상에 하나뿐인 독창적인 기획을 지닌 도서들이 세상에 나올 수 있도록 후원하고, 
-            가장 먼저 특별한 첫 번째 주인이 되어보세요.
+            MOOKK은 종이의 책에 탄생한 오직 종이책만을 위한 크라우드펀딩 출판 플랫폼입니다
           </p>
           <div className="flex justify-center gap-4 pt-4">
             <Link
