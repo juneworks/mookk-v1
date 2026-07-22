@@ -93,8 +93,8 @@ export default function Header({ initialUser }: HeaderProps) {
             >
               MOOKK
             </span>
-            <span className="rounded-full bg-[#203226]/10 px-2 py-0.5 text-[10px] font-bold text-[#203226] dark:bg-white/10 dark:text-[#edfae0]">
-              v1.0
+            <span className="rounded-full bg-[#203226]/10 px-2 py-0.5 text-[9px] font-bold tracking-wider text-[#203226] dark:bg-white/10 dark:text-[#edfae0]">
+              beta
             </span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-[#203226]/70 dark:text-[#edfae0]/70">
