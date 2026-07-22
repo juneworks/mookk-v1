@@ -78,12 +78,13 @@ export default async function Home() {
       {/* 1. Hero Section - Apple MacBook Air 스타일의 대담한 1단 타이포그래피 */}
       <section className="w-full bg-[#edfae0] pt-28 pb-16 text-center">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-6">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl md:text-7xl leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight leading-tight">
             종이책을 사랑하는 사람들을<br />
             한데 묶는 공간
           </h1>
-          <p className="mx-auto max-w-xl text-base sm:text-lg text-[#203226]/80 leading-relaxed font-light">
-            MOOKK은 종이의 책에 탄생한 오직 종이책만을 위한 크라우드펀딩 출판 플랫폼입니다
+          <p className="mx-auto max-w-xl text-sm sm:text-base text-[#203226]/80 leading-relaxed font-light">
+            MOOKK은 종이의 책에 탄생한<br />
+            오직 종이책만을 위한 크라우드펀딩 출판 플랫폼입니다.
           </p>
           <div className="flex justify-center gap-4 pt-4">
             <Link
