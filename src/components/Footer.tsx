@@ -7,7 +7,7 @@ export default function Footer() {
   const [isBusinessInfoOpen, setIsBusinessInfoOpen] = useState(false)
 
   return (
-    <footer className="w-full bg-[#244C28] py-16 mt-auto text-xs text-white/70 dark:bg-zinc-950">
+    <footer className="w-full bg-[#1C4025] py-16 mt-auto text-xs text-white/70 dark:bg-zinc-950">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-10">
         
         {/* 푸터 상단 안내 문구 */}

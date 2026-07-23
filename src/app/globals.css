@@ -51,23 +51,23 @@
 
 :root {
   --background: #F4F3EF; /* 미색 본문 배경 (종이 질감 톤) */
-  --foreground: #244C28; /* 메인 텍스트 */
+  --foreground: #1C4025; /* 메인 텍스트 */
   --card: #ffffff;
-  --card-foreground: #244C28;
+  --card-foreground: #1C4025;
   --popover: #ffffff;
-  --popover-foreground: #244C28;
-  --primary: #244C28;
+  --popover-foreground: #1C4025;
+  --primary: #1C4025;
   --primary-foreground: #F4F3EF;
   --secondary: #edfae0; /* 헤더 배경 */
-  --secondary-foreground: #244C28;
+  --secondary-foreground: #1C4025;
   --muted: #edfae0;
   --muted-foreground: rgba(32, 50, 38, 0.6);
   --accent: #edfae0;
-  --accent-foreground: #244C28;
+  --accent-foreground: #1C4025;
   --destructive: oklch(0.577 0.245 27.325);
   --border: rgba(32, 50, 38, 0.12); /* 투명한 어두운 녹색 보더 */
   --input: rgba(32, 50, 38, 0.15);
-  --ring: #244C28;
+  --ring: #1C4025;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -75,13 +75,13 @@
   --chart-5: oklch(0.269 0 0);
   --radius: 0.75rem;
   --sidebar: #edfae0;
-  --sidebar-foreground: #244C28;
-  --sidebar-primary: #244C28;
+  --sidebar-foreground: #1C4025;
+  --sidebar-primary: #1C4025;
   --sidebar-primary-foreground: #F4F3EF;
   --sidebar-accent: #F4F3EF;
-  --sidebar-accent-foreground: #244C28;
+  --sidebar-accent-foreground: #1C4025;
   --sidebar-border: rgba(32, 50, 38, 0.1);
-  --sidebar-ring: #244C28;
+  --sidebar-ring: #1C4025;
 }
 
 .dark {
@@ -93,11 +93,11 @@
   --popover-foreground: #F4F3EF;
   --primary: #F4F3EF;
   --primary-foreground: #1c1c1a;
-  --secondary: #244C28;
+  --secondary: #1C4025;
   --secondary-foreground: #F4F3EF;
-  --muted: #244C28;
+  --muted: #1C4025;
   --muted-foreground: rgba(244, 243, 239, 0.6);
-  --accent: #244C28;
+  --accent: #1C4025;
   --accent-foreground: #F4F3EF;
   --border: rgba(244, 243, 239, 0.15);
   --input: rgba(244, 243, 239, 0.15);

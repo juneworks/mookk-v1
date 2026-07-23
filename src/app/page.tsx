@@ -73,7 +73,7 @@ export default async function Home() {
   const displayProjects = useMock ? mockProjects : dbProjects
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-[#244C28]">
+    <div className="flex flex-col min-h-screen bg-background text-[#1C4025]">
       
       {/* 1. Hero Section - Apple MacBook Air 스타일의 대담한 1단 타이포그래피 */}
       <section className="w-full bg-[#edfae0] pt-28 pb-16 text-center">
@@ -82,20 +82,20 @@ export default async function Home() {
             종이책을 사랑하는 사람들을<br />
             한데 묶는 공간
           </h1>
-          <p className="mx-auto max-w-xl text-sm sm:text-base text-[#244C28]/80 leading-relaxed font-light">
+          <p className="mx-auto max-w-xl text-sm sm:text-base text-[#1C4025]/80 leading-relaxed font-light">
             MOOKK은 종이의 책에 탄생한<br />
             오직 종이책만을 위한 크라우드펀딩 출판 플랫폼입니다.
           </p>
           <div className="flex justify-center gap-4 pt-4">
             <Link
               href="/login"
-              className="rounded-full bg-[#244C28] px-6 py-3 text-sm font-semibold text-[#d6f9b4] hover:bg-[#244C28]/90 transition-all shadow-sm"
+              className="rounded-full bg-[#1C4025] px-6 py-3 text-sm font-semibold text-[#d6f9b4] hover:bg-[#1C4025]/90 transition-all shadow-sm"
             >
               지금 시작하기
             </Link>
             <Link
               href="/projects/create"
-              className="rounded-full border border-[#244C28]/20 bg-white/40 px-6 py-3 text-sm font-semibold hover:bg-white/70 transition-all"
+              className="rounded-full border border-[#1C4025]/20 bg-white/40 px-6 py-3 text-sm font-semibold hover:bg-white/70 transition-all"
             >
               내 책 개설하기
             </Link>
@@ -125,37 +125,37 @@ export default async function Home() {
               <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 space-y-6 flex flex-col items-center">
                 
                 {/* 카테고리, 저자명, D-Day 메타 정보 */}
-                <div className="flex items-center gap-2 text-xs font-bold text-[#244C28]/50">
+                <div className="flex items-center gap-2 text-xs font-bold text-[#1C4025]/50">
                   {project.category && (
-                    <span className="rounded-full bg-[#244C28]/10 px-2.5 py-0.5 uppercase tracking-wider text-[#244C28]">
+                    <span className="rounded-full bg-[#1C4025]/10 px-2.5 py-0.5 uppercase tracking-wider text-[#1C4025]">
                       {project.category}
                     </span>
                   )}
                   <span>by {project.User?.name || '창작 작가'}</span>
                   <span>•</span>
-                  <span className="text-[#244C28]/80">{getDaysRemaining(project.deadline)}</span>
+                  <span className="text-[#1C4025]/80">{getDaysRemaining(project.deadline)}</span>
                 </div>
 
                 {/* 대형 타이틀 */}
-                <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight max-w-2xl text-[#244C28]">
+                <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight max-w-2xl text-[#1C4025]">
                   {project.title}
                 </h2>
 
                 {/* 요약 소개글 */}
-                <p className="mx-auto max-w-xl text-sm sm:text-base text-[#244C28]/70 leading-relaxed font-light">
+                <p className="mx-auto max-w-xl text-sm sm:text-base text-[#1C4025]/70 leading-relaxed font-light">
                   {project.description}
                 </p>
 
                 {/* 펀딩 프로그레스 바 (중앙 매핑) */}
                 <div className="w-full max-w-md space-y-2 pt-2">
-                  <div className="flex justify-between items-baseline text-xs font-bold text-[#244C28]/60">
-                    <span className="text-lg font-black text-[#244C28]">{realPercent}% 달성</span>
+                  <div className="flex justify-between items-baseline text-xs font-bold text-[#1C4025]/60">
+                    <span className="text-lg font-black text-[#1C4025]">{realPercent}% 달성</span>
                     <span>{project.current_amount.toLocaleString()}원 모금</span>
                   </div>
-                  <div className="h-1.5 w-full bg-[#244C28]/10 rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-[#1C4025]/10 rounded-full overflow-hidden">
                     <div
                       style={{ width: `${percent}%` }}
-                      className="h-full bg-[#244C28] rounded-full transition-all duration-700"
+                      className="h-full bg-[#1C4025] rounded-full transition-all duration-700"
                     />
                   </div>
                 </div>
@@ -163,7 +163,7 @@ export default async function Home() {
                 {/* '더 알아보기' 버튼 (가운데 정렬) */}
                 <div className="pt-2">
                   <Link href={`/projects/${project.id}`}>
-                    <button className="rounded-full bg-[#244C28] text-[#F4F3EF] hover:bg-[#244C28]/90 px-8 py-3 text-xs font-bold transition-all uppercase tracking-widest shadow-sm">
+                    <button className="rounded-full bg-[#1C4025] text-[#F4F3EF] hover:bg-[#1C4025]/90 px-8 py-3 text-xs font-bold transition-all uppercase tracking-widest shadow-sm">
                       더 알아보기
                     </button>
                   </Link>
@@ -174,10 +174,10 @@ export default async function Home() {
               <div className="w-full max-w-5xl px-4 sm:px-6 lg:px-8 mt-12 flex justify-center">
                 <div
                   style={coverStyle}
-                  className="w-full aspect-[16/9] max-h-[420px] rounded-3xl bg-cover bg-center border border-[#244C28]/10 shadow-sm flex items-center justify-center p-6 relative overflow-hidden"
+                  className="w-full aspect-[16/9] max-h-[420px] rounded-3xl bg-cover bg-center border border-[#1C4025]/10 shadow-sm flex items-center justify-center p-6 relative overflow-hidden"
                 >
                   {!project.cover_image_url && (
-                    <div className="text-center font-serif text-lg font-semibold text-[#244C28] px-6 py-3 bg-white/90 rounded-lg shadow-sm border border-[#244C28]/10">
+                    <div className="text-center font-serif text-lg font-semibold text-[#1C4025] px-6 py-3 bg-white/90 rounded-lg shadow-sm border border-[#1C4025]/10">
                       {project.title}
                     </div>
                   )}
