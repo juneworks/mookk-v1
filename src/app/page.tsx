@@ -119,7 +119,7 @@ export default async function Home() {
 
         return (
           <div key={project.id} className="w-full flex flex-col">
-            <section className="w-full bg-background pt-20 pb-16 text-center flex flex-col items-center">
+            <section className="w-full bg-[#F0EEE9] pt-20 pb-16 text-center flex flex-col items-center">
               
               {/* 상단 텍스트 중앙 정렬 영역 */}
               <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 space-y-6 flex flex-col items-center">
