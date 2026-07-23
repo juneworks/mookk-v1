@@ -18,7 +18,7 @@ const mockProjects = [
   {
     id: "mock-2",
     title: "한글 타이포그래피의 유산",
-    description: "납활자 인쇄 시절부터 현대 디지털 폰트 디자인까지, 한글 자형의 아름다움과 타이포그래피 유산을 정리한 전문 예술 도서",
+    description: "납활자 인쇄 시절부터 현대 디지털 폰트 디자인까지,\n한글 자형의 아름다움과 타이포그래피 유산을 정리한 전문 예술 도서",
     goal_amount: 5000000,
     current_amount: 1500000,
     deadline: new Date(Date.now() + 19 * 24 * 60 * 60 * 1000).toISOString(),
@@ -29,7 +29,7 @@ const mockProjects = [
   {
     id: "mock-3",
     title: "보내지 못한 다섯 통의 편지",
-    description: "독립출판 수상 소설가 5인이 각자 그려내는 사랑에 대한 기억의 조각을 엮은 로맨스 단편 소설집",
+    description: "독립출판상 수상 소설가 5인이 각자 그려내는\n사랑에 대한 기억의 조각을 엮은 로맨스 단편 소설집",
     goal_amount: 4000000,
     current_amount: 6400000,
     deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
@@ -111,18 +111,29 @@ export default async function Home() {
         const percent = Math.min(100, Math.round((project.current_amount / project.goal_amount) * 100))
         const realPercent = Math.round((project.current_amount / project.goal_amount) * 100)
 
-        // 프로젝트 타이틀 및 소개글 동적 변경 적용
+        // 프로젝트 타이틀 동적 적용
         const displayTitle = index === 0 
           ? "서점원들의 밤" 
           : index === 1
           ? "한글 타이포그래피의 유산"
           : "보내지 못한 다섯 통의 편지"
 
-        const displayDescription = index === 0 
-          ? "골목 모퉁이, 밤이 깊어 갈수록 빛나는 동네 책방들의 숨겨진 이야기와 따뜻한 일상을 담은 서점 직원들의 위로와 온기를 건네는 기록" 
-          : index === 1
-          ? "납활자 인쇄 시절부터 현대 디지털 폰트 디자인까지, 한글 자형의 아름다움과 타이포그래피 유산을 정리한 전문 예술 도서"
-          : "독립출판 수상 소설가 5인이 각자 그려내는 사랑에 대한 기억의 조각을 엮은 로맨스 단편 소설집"
+        // 프로젝트 설명 2열 줄바꿈 노드 동적 구성
+        const displayDescriptionNode = index === 0 ? (
+          <>
+            골목 모퉁이, 밤이 깊어 갈수록 빛나는 동네 책방들의 숨겨진 이야기와 따뜻한 일상을 담은 서점 직원들의 위로와 온기를 건네는 기록
+          </>
+        ) : index === 1 ? (
+          <>
+            납활자 인쇄 시절부터 현대 디지털 폰트 디자인까지,<br />
+            한글 자형의 아름다움과 타이포그래피 유산을 정리한 전문 예술 도서
+          </>
+        ) : (
+          <>
+            독립출판상 수상 소설가 5인이 각자 그려내는<br />
+            사랑에 대한 기억의 조각을 엮은 로맨스 단편 소설집
+          </>
+        )
 
         return (
           <div key={project.id} className="w-full flex flex-col">
@@ -148,9 +159,9 @@ export default async function Home() {
                   {displayTitle}
                 </h2>
 
-                {/* 요약 소개글 */}
+                {/* 요약 소개글 (2열 줄바꿈 구성) */}
                 <p className="mx-auto max-w-xl text-sm sm:text-base text-[#1C4025]/70 leading-relaxed font-light">
-                  {displayDescription}
+                  {displayDescriptionNode}
                 </p>
 
                 {/* 펀딩 프로그레스 바 (중앙 매핑) */}
