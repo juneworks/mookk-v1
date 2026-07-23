@@ -7,7 +7,7 @@ const mockProjects = [
   {
     id: "mock-1",
     title: "서점원들의 밤",
-    description: "골목 모퉁이, 밤이 깊어 갈수록 빛나는 동네 책방들의 숨겨진 이야기와 따뜻한 일상을 담은 서점 직원들의 위로와 온기를 건네는 기록",
+    description: "밤이 깊어 갈수록 빛나는 동네 책방들의 숨은 이야기와 따뜻한 일상을\n위로와 온기의 말로 서점 직원들이 담아낸 기록",
     goal_amount: 3000000,
     current_amount: 4200000,
     deadline: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString(),
@@ -121,7 +121,8 @@ export default async function Home() {
         // 프로젝트 설명 2열 줄바꿈 노드 동적 구성
         const displayDescriptionNode = index === 0 ? (
           <>
-            골목 모퉁이, 밤이 깊어 갈수록 빛나는 동네 책방들의 숨겨진 이야기와 따뜻한 일상을 담은 서점 직원들의 위로와 온기를 건네는 기록
+            밤이 깊어 갈수록 빛나는 동네 책방들의 숨은 이야기와 따뜻한 일상을<br />
+            위로와 온기의 말로 서점 직원들이 담아낸 기록
           </>
         ) : index === 1 ? (
           <>
@@ -188,13 +189,13 @@ export default async function Home() {
                 </div>
               </div>
 
-              {/* 하단 3D 책 실물 이미지 전시 영역 (Apple 스타일 3D 부유 그림자 적용) */}
+              {/* 하단 3D 책 실물 이미지 전시 영역 (Apple 스타일 50% 강화된 3D 부유 그림자 적용) */}
               <div className="w-full max-w-5xl px-4 sm:px-6 lg:px-8 mt-12 flex justify-center">
                 <div className="relative w-full max-w-lg aspect-[16/10] flex items-center justify-center select-none py-4 transition-transform duration-500 hover:scale-[1.02]">
                   <img 
                     src={`/images/book-0${index + 1}.png`} 
                     alt={displayTitle}
-                    className="w-full max-h-[360px] object-contain filter drop-shadow-[0_20px_25px_rgba(0,0,0,0.25)] drop-shadow-[0_8px_10px_rgba(0,0,0,0.12)]"
+                    className="w-full max-h-[360px] object-contain filter drop-shadow-[0_25px_30px_rgba(0,0,0,0.40)] drop-shadow-[0_12px_15px_rgba(0,0,0,0.22)]"
                   />
                 </div>
               </div>
