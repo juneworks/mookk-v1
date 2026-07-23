@@ -127,7 +127,7 @@ export default async function Home() {
                 {/* 카테고리, 저자명, D-Day 메타 정보 */}
                 <div className="flex items-center gap-2 text-xs font-bold text-[#1C4025]/50">
                   {project.category && (
-                    <span className="rounded-full bg-[#1C4025]/10 px-2.5 py-0.5 uppercase tracking-wider text-[#1C4025]">
+                    <span className="rounded-full bg-[#c84b15] px-2.5 py-0.5 uppercase tracking-wider text-white text-[10px] font-bold border-none shrink-0">
                       {project.category}
                     </span>
                   )}

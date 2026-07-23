@@ -121,7 +121,9 @@ export default function Header({ initialUser }: HeaderProps) {
                 <span className="text-sm font-semibold text-[#1C4025] dark:text-[#edfae0]">
                   {user.name}
                 </span>
-                <span className="rounded bg-[#1C4025] text-white dark:bg-[#edfae0] dark:text-[#142017] px-2 py-0.5 text-[10px] font-bold tracking-wide">
+                <span className={`rounded text-white px-2 py-0.5 text-[10px] font-bold tracking-wide border-none ${
+                  user.role === 'creator' ? 'bg-[#c84b15]' : 'bg-[#1C4025]'
+                }`}>
                   {getRoleLabel(user.role)}
                 </span>
               </div>
@@ -129,7 +131,9 @@ export default function Header({ initialUser }: HeaderProps) {
                 <span className="text-xs font-semibold text-[#1C4025] dark:text-[#edfae0]">
                   {user.name}
                 </span>
-                <span className="rounded bg-[#1C4025] text-white dark:bg-[#edfae0] dark:text-[#142017] px-1.5 py-0.5 text-[9px] font-bold">
+                <span className={`rounded text-white px-1.5 py-0.5 text-[9px] font-bold border-none ${
+                  user.role === 'creator' ? 'bg-[#c84b15]' : 'bg-[#1C4025]'
+                }`}>
                   {getRoleLabel(user.role)}
                 </span>
               </div>
