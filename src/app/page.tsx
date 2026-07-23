@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import Footer from '@/components/Footer'
 
-// 가상(Mock) 프로젝트 데이터 정의 (DB 데이터가 비어 있을 경우 노출)
+// 가상(Mock) 프로젝트 데이터 정의
 const mockProjects = [
   {
     id: "mock-1",
@@ -46,6 +46,36 @@ function getDaysRemaining(deadlineStr: string) {
   const diffTime = deadline.getTime() - today.getTime()
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   return diffDays > 0 ? `D-${diffDays}` : '마감됨'
+}
+
+// 003 모크업 가이드를 오마주한 책 컬러 및 라벨 데이터 매핑 헬퍼 함수
+function getBookColorTheme(index: number) {
+  const pos = index % 3
+  if (pos === 0) {
+    return {
+      // 003의 01번 레드 계열 책
+      cover: 'linear-gradient(135deg, #d13535 0%, #8c1e1e 100%)',
+      spine: '#8c1e1e',
+      label: 'UNCOATED',
+      no: '01'
+    }
+  } else if (pos === 1) {
+    // 003의 02번 블루 계열 책
+    return {
+      cover: 'linear-gradient(135deg, #3577d1 0%, #1e4d8c 100%)',
+      spine: '#1e4d8c',
+      label: 'PART 02 - UNCOATED',
+      no: '02'
+    }
+  } else {
+    // 003의 03번 그린 계열 책
+    return {
+      cover: 'linear-gradient(135deg, #2ca664 0%, #1a6b3f 100%)',
+      spine: '#1a6b3f',
+      label: 'PART 03 - COATED',
+      no: '03'
+    }
+  }
 }
 
 export default async function Home() {
@@ -103,19 +133,19 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Hero 영역과 첫 프로젝트 사이 5px 흰색 구분선 */}
+      {/* Hero 영역과 첫 프로젝트 사이 10px 흰색 구분선 */}
       <div className="w-full h-[10px] bg-white border-none shrink-0" />
 
-      {/* 2. 프로젝트 1단 배너 목록 (상단 텍스트 중앙 정렬 + 하단 이미지 중앙 정렬 + '더 알아보기') */}
+      {/* 2. 프로젝트 1단 배너 목록 (상단 텍스트 중앙 정렬 + 하단 3D 책 목업 이미지 + '더 알아보기') */}
       {displayProjects.map((project, index) => {
         const percent = Math.min(100, Math.round((project.current_amount / project.goal_amount) * 100))
         const realPercent = Math.round((project.current_amount / project.goal_amount) * 100)
 
-        const coverStyle = project.cover_image_url?.startsWith('linear-gradient')
-          ? { backgroundImage: project.cover_image_url }
-          : project.cover_image_url
-          ? { backgroundImage: `url(${project.cover_image_url})` }
-          : { backgroundImage: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }
+        // 3D 책 테마 정보 가져오기
+        const theme = getBookColorTheme(index)
+        const hasRealCover = project.cover_image_url && !project.cover_image_url.startsWith('linear-gradient')
+        const coverBg = hasRealCover ? `url(${project.cover_image_url})` : theme.cover
+        const spineBg = theme.spine
 
         return (
           <div key={project.id} className="w-full flex flex-col">
@@ -170,23 +200,78 @@ export default async function Home() {
                 </div>
               </div>
 
-              {/* 하단 대형 비주얼 이미지 영역 (중앙 배치) */}
+              {/* 하단 3D 책 오브젝트 전시 영역 (Apple 스타일 단아한 렌더러) */}
               <div className="w-full max-w-5xl px-4 sm:px-6 lg:px-8 mt-12 flex justify-center">
-                <div
-                  style={coverStyle}
-                  className="w-full aspect-[16/9] max-h-[420px] rounded-3xl bg-cover bg-center border border-[#1C4025]/10 shadow-sm flex items-center justify-center p-6 relative overflow-hidden"
-                >
-                  {!project.cover_image_url && (
-                    <div className="text-center font-serif text-lg font-semibold text-[#1C4025] px-6 py-3 bg-white/90 rounded-lg shadow-sm border border-[#1C4025]/10">
-                      {project.title}
+                <div className="w-full aspect-[16/9] max-h-[380px] rounded-3xl bg-[#ECEAE4] border border-[#1C4025]/5 shadow-inner flex items-center justify-center p-8 relative overflow-hidden">
+                  
+                  {/* 3D 원근 큐브 공간 */}
+                  <div className="relative py-4" style={{ perspective: '1200px' }}>
+                    <div 
+                      className="relative w-[145px] h-[210px] transition-transform duration-500 hover:scale-[1.03] select-none"
+                      style={{
+                        transformStyle: 'preserve-3d',
+                        transform: 'rotateY(-24deg) rotateX(12deg) rotateZ(-3deg)',
+                        boxShadow: '-16px 20px 32px rgba(0,0,0,0.22), -3px 5px 12px rgba(0,0,0,0.15)'
+                      }}
+                    >
+                      {/* [1] 책 앞표지 (Front Cover) */}
+                      <div 
+                        className="absolute inset-0 w-full h-full rounded-r-[4px] overflow-hidden flex flex-col justify-between p-4 z-10 border-l border-white/20"
+                        style={{
+                          background: coverBg,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          backfaceVisibility: 'hidden'
+                        }}
+                      >
+                        {/* 도서 정보 레이아웃 */}
+                        <div className="text-left space-y-1">
+                          <div className="text-[7px] font-black text-white/40 tracking-widest uppercase">
+                            MOOKK COLLECTION
+                          </div>
+                          <h3 className="text-[11px] sm:text-xs font-extrabold text-white leading-snug font-serif break-keep line-clamp-3">
+                            {project.title}
+                          </h3>
+                        </div>
+                        
+                        <div className="text-left flex flex-col gap-0.5">
+                          <span className="text-[7px] text-white/50 font-serif">
+                            {project.User?.name || 'Mookk Author'}
+                          </span>
+                          <div className="w-6 h-[1px] bg-white/20 my-1" />
+                          <span className="text-[6px] text-white/30 tracking-wider font-mono">
+                            {theme.label} {theme.no}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* [2] 책등 (Spine) - w-[20px] */}
+                      <div 
+                        className="absolute top-0 bottom-0 left-0 w-[20px] origin-left border-r border-black/10"
+                        style={{
+                          transform: 'rotateY(-90deg)',
+                          background: `linear-gradient(to right, rgba(0,0,0,0.25) 0%, rgba(255,255,255,0.1) 40%, rgba(0,0,0,0.25) 100%), ${spineBg}`
+                        }}
+                      />
+
+                      {/* [3] 책 종이 옆면 (Pages) - w-[18px] */}
+                      <div 
+                        className="absolute top-0 bottom-0 right-0 w-[18px] origin-right"
+                        style={{
+                          transform: 'rotateY(90deg) translateZ(127px)', // w-[145px] - w-[18px] 꺾임 보정 (145-18 = 127px)
+                          background: 'linear-gradient(to right, #f4f3ef 0%, #e6e5e0 70%, #dcdad4 100%)',
+                          boxShadow: 'inset 3px 0 6px rgba(0,0,0,0.12)'
+                        }}
+                      />
                     </div>
-                  )}
+                  </div>
+                  
                 </div>
               </div>
 
             </section>
 
-            {/* 블록 간 5px 흰색 구분선 */}
+            {/* 블록 간 10px 흰색 구분선 */}
             <div className="w-full h-[10px] bg-white border-none shrink-0" />
           </div>
         )
