@@ -6,7 +6,7 @@ import Footer from '@/components/Footer'
 const mockProjects = [
   {
     id: "mock-1",
-    title: "골목 안 작은 책방이 켜지는 시간",
+    title: "서점원들의 밤",
     description: "골목 모퉁이, 밤이 깊어 갈수록 빛나는 동네 책방들의 숨겨진 이야기와 따뜻한 일상을 담은 서점 직원들의 위로와 온기를 건네는 기록",
     goal_amount: 3000000,
     current_amount: 4200000,
@@ -140,7 +140,7 @@ export default async function Home() {
 
         // 첫 번째 프로젝트 타이틀 및 소개글 동적 변경 적용
         const displayTitle = index === 0 
-          ? "골목 안 작은 책방이 켜지는 시간" 
+          ? "서점원들의 밤" 
           : project.title
         const displayDescription = index === 0 
           ? "골목 모퉁이, 밤이 깊어 갈수록 빛나는 동네 책방들의 숨겨진 이야기와 따뜻한 일상을 담은 서점 직원들의 위로와 온기를 건네는 기록" 
