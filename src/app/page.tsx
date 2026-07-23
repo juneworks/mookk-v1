@@ -104,7 +104,7 @@ export default async function Home() {
       </section>
 
       {/* Hero 영역과 첫 프로젝트 사이 5px 흰색 구분선 */}
-      <div className="w-full h-[5px] bg-white border-none shrink-0" />
+      <div className="w-full h-[10px] bg-white border-none shrink-0" />
 
       {/* 2. 프로젝트 1단 배너 목록 (상단 텍스트 중앙 정렬 + 하단 이미지 중앙 정렬 + '더 알아보기') */}
       {displayProjects.map((project, index) => {
@@ -187,7 +187,7 @@ export default async function Home() {
             </section>
 
             {/* 블록 간 5px 흰색 구분선 */}
-            <div className="w-full h-[5px] bg-white border-none shrink-0" />
+            <div className="w-full h-[10px] bg-white border-none shrink-0" />
           </div>
         )
       })}
