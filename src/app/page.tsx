@@ -6,8 +6,8 @@ import Footer from '@/components/Footer'
 const mockProjects = [
   {
     id: "mock-1",
-    title: "서점원들의 밤: 골목 안 작은 책방이 켜지는 시간",
-    description: "골목 모퉁이, 밤이 깊어 갈수록 빛나는 동네 책방들의 숨겨진 이야기와 서점원들의 따뜻한 일상을 담은 에세이집입니다. 독자들에게 위로와 온기를 건네는 서점원들의 조용한 기록입니다.",
+    title: "골목 안 작은 책방이 켜지는 시간",
+    description: "골목 모퉁이, 밤이 깊어 갈수록 빛나는 동네 책방들의 숨겨진 이야기와 따뜻한 일상을 담은 서점 직원들의 위로와 온기를 건네는 기록",
     goal_amount: 3000000,
     current_amount: 4200000,
     deadline: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString(),
@@ -53,14 +53,12 @@ function getBookColorTheme(index: number) {
   const pos = index % 3
   if (pos === 0) {
     return {
-      // 003의 01번 레드 계열 책
       cover: 'linear-gradient(135deg, #d13535 0%, #8c1e1e 100%)',
       spine: '#8c1e1e',
       label: 'UNCOATED',
       no: '01'
     }
   } else if (pos === 1) {
-    // 003의 02번 블루 계열 책
     return {
       cover: 'linear-gradient(135deg, #3577d1 0%, #1e4d8c 100%)',
       spine: '#1e4d8c',
@@ -68,7 +66,6 @@ function getBookColorTheme(index: number) {
       no: '02'
     }
   } else {
-    // 003의 03번 그린 계열 책
     return {
       cover: 'linear-gradient(135deg, #2ca664 0%, #1a6b3f 100%)',
       spine: '#1a6b3f',
@@ -141,6 +138,14 @@ export default async function Home() {
         const percent = Math.min(100, Math.round((project.current_amount / project.goal_amount) * 100))
         const realPercent = Math.round((project.current_amount / project.goal_amount) * 100)
 
+        // 첫 번째 프로젝트 타이틀 및 소개글 동적 변경 적용
+        const displayTitle = index === 0 
+          ? "골목 안 작은 책방이 켜지는 시간" 
+          : project.title
+        const displayDescription = index === 0 
+          ? "골목 모퉁이, 밤이 깊어 갈수록 빛나는 동네 책방들의 숨겨진 이야기와 따뜻한 일상을 담은 서점 직원들의 위로와 온기를 건네는 기록" 
+          : project.description
+
         // 3D 책 테마 정보 가져오기
         const theme = getBookColorTheme(index)
         const hasRealCover = project.cover_image_url && !project.cover_image_url.startsWith('linear-gradient')
@@ -168,12 +173,12 @@ export default async function Home() {
 
                 {/* 대형 타이틀 */}
                 <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight max-w-2xl text-[#1C4025]">
-                  {project.title}
+                  {displayTitle}
                 </h2>
 
                 {/* 요약 소개글 */}
                 <p className="mx-auto max-w-xl text-sm sm:text-base text-[#1C4025]/70 leading-relaxed font-light">
-                  {project.description}
+                  {displayDescription}
                 </p>
 
                 {/* 펀딩 프로그레스 바 (중앙 매핑) */}
@@ -207,7 +212,7 @@ export default async function Home() {
                   <div className="relative w-full max-w-lg aspect-[16/10] flex items-center justify-center select-none py-4">
                     <img 
                       src="/images/book-01.png" 
-                      alt={project.title}
+                      alt={displayTitle}
                       className="w-full max-h-[360px] object-contain drop-shadow-[0_25px_45px_rgba(0,0,0,0.22)]"
                     />
                   </div>
@@ -241,7 +246,7 @@ export default async function Home() {
                               MOOKK COLLECTION
                             </div>
                             <h3 className="text-[11px] sm:text-xs font-extrabold text-white leading-snug font-serif break-keep line-clamp-3">
-                              {project.title}
+                              {displayTitle}
                             </h3>
                           </div>
                           
@@ -283,7 +288,7 @@ export default async function Home() {
 
             </section>
 
-            {/* 블록 간 10px 흰색 구분선 */}
+            {/* /Users/junekim/Downloads/mookk-v1/src/app/page.tsx 내의 블록 간 10px 흰색 구분선 */}
             <div className="w-full h-[10px] bg-white border-none shrink-0" />
           </div>
         )
