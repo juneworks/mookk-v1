@@ -88,24 +88,24 @@ export default function Header({ initialUser }: HeaderProps) {
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2">
             <span 
-              className="text-2xl font-black tracking-wider text-[#203226] dark:text-[#edfae0]"
+              className="text-2xl font-black tracking-wider text-[#244C28] dark:text-[#edfae0]"
               style={{ WebkitTextStroke: '0.7px currentColor' }}
             >
               MOOKK
             </span>
-            <span className="rounded-full bg-[#203226]/10 px-2 py-0.5 text-[9px] font-bold tracking-wider text-[#203226] dark:bg-white/10 dark:text-[#edfae0]">
+            <span className="rounded-full bg-[#244C28]/10 px-2 py-0.5 text-[9px] font-bold tracking-wider text-[#244C28] dark:bg-white/10 dark:text-[#edfae0]">
               beta
             </span>
           </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-[#203226]/70 dark:text-[#edfae0]/70">
-            <Link href="/" className="hover:text-[#203226] dark:hover:text-[#edfae0] transition-colors font-bold">
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-[#244C28]/70 dark:text-[#edfae0]/70">
+            <Link href="/" className="hover:text-[#244C28] dark:hover:text-[#edfae0] transition-colors font-bold">
               프로젝트
             </Link>
-            <Link href="#" className="hover:text-[#203226] dark:hover:text-[#edfae0] transition-colors font-bold">
+            <Link href="#" className="hover:text-[#244C28] dark:hover:text-[#edfae0] transition-colors font-bold">
               커뮤니티
             </Link>
             {user?.role === 'creator' && (
-              <Link href="/projects/create" className="hover:text-[#203226] dark:hover:text-[#edfae0] transition-colors">
+              <Link href="/projects/create" className="hover:text-[#244C28] dark:hover:text-[#edfae0] transition-colors">
                 프로젝트 등록
               </Link>
             )}
@@ -118,34 +118,34 @@ export default function Header({ initialUser }: HeaderProps) {
             <div className="flex items-center gap-4">
               {/* 유저명과 역할을 1열로 배치하고 짙은 배경의 흰색 글자 박스 뱃지 처리 */}
               <div className="flex items-center gap-2 hidden sm:flex">
-                <span className="text-sm font-semibold text-[#203226] dark:text-[#edfae0]">
+                <span className="text-sm font-semibold text-[#244C28] dark:text-[#edfae0]">
                   {user.name}
                 </span>
-                <span className="rounded bg-[#203226] text-white dark:bg-[#edfae0] dark:text-[#142017] px-2 py-0.5 text-[10px] font-bold tracking-wide">
+                <span className="rounded bg-[#244C28] text-white dark:bg-[#edfae0] dark:text-[#142017] px-2 py-0.5 text-[10px] font-bold tracking-wide">
                   {getRoleLabel(user.role)}
                 </span>
               </div>
               <div className="flex items-center gap-1.5 sm:hidden">
-                <span className="text-xs font-semibold text-[#203226] dark:text-[#edfae0]">
+                <span className="text-xs font-semibold text-[#244C28] dark:text-[#edfae0]">
                   {user.name}
                 </span>
-                <span className="rounded bg-[#203226] text-white dark:bg-[#edfae0] dark:text-[#142017] px-1.5 py-0.5 text-[9px] font-bold">
+                <span className="rounded bg-[#244C28] text-white dark:bg-[#edfae0] dark:text-[#142017] px-1.5 py-0.5 text-[9px] font-bold">
                   {getRoleLabel(user.role)}
                 </span>
               </div>
               <Link href={getMyPageLink()}>
-                <Button variant="outline" size="sm" className="border-[#203226]/20 text-[#203226] hover:bg-[#203226]/5 dark:border-white/20 dark:text-[#edfae0] dark:hover:bg-white/5">
+                <Button variant="outline" size="sm" className="border-[#244C28]/20 text-[#244C28] hover:bg-[#244C28]/5 dark:border-white/20 dark:text-[#edfae0] dark:hover:bg-white/5">
                   마이페이지
                 </Button>
               </Link>
-              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-[#203226]/80 hover:bg-[#203226]/5 dark:text-[#edfae0]/80 dark:hover:bg-white/5">
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-[#244C28]/80 hover:bg-[#244C28]/5 dark:text-[#edfae0]/80 dark:hover:bg-white/5">
                 로그아웃
               </Button>
             </div>
           ) : (
             <div className="flex items-center gap-2">
               <Link href="/login">
-                <Button size="sm" className="bg-[#203226] text-[#d6f9b4] hover:bg-[#203226]/90 dark:bg-[#edfae0] dark:text-[#142017] dark:hover:bg-[#edfae0]/90 font-bold">
+                <Button size="sm" className="bg-[#244C28] text-[#d6f9b4] hover:bg-[#244C28]/90 dark:bg-[#edfae0] dark:text-[#142017] dark:hover:bg-[#edfae0]/90 font-bold">
                   로그인
                 </Button>
               </Link>
