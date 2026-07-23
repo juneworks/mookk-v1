@@ -17,8 +17,8 @@ const mockProjects = [
   },
   {
     id: "mock-2",
-    title: "한글 타이포그래피의 유산: 활판 인쇄에서 디지털 폰트까지",
-    description: "납활자 인쇄 시절부터 현대 디지털 폰트 디자인까지, 한글 자형의 아름다움과 타이포그래피 유산을 정리한 전문 예술 도서. 글자 뒤에 숨은 장인들의 노력을 엿봅니다.",
+    title: "한글 타이포그래피의 유산",
+    description: "납활자 인쇄 시절부터 현대 디지털 폰트 디자인까지, 한글 자형의 아름다움과 타이포그래피 유산을 정리한 전문 예술 도서",
     goal_amount: 5000000,
     current_amount: 1500000,
     deadline: new Date(Date.now() + 19 * 24 * 60 * 60 * 1000).toISOString(),
@@ -28,8 +28,8 @@ const mockProjects = [
   },
   {
     id: "mock-3",
-    title: "단편 소설 선집: 사소한 기억의 묶음",
-    description: "독립 출판 씬에서 주목받는 신진 소설가 5인이 그려내는 기억의 조각들. 우리 삶의 가장 사소하고 아름다운 찰나를 문학의 그릇에 묶었습니다. 잔잔한 감동을 선사합니다.",
+    title: "보내지 못한 다섯 통의 편지",
+    description: "독립출판 수상 소설가 5인이 각자 그려내는 사랑에 대한 기억의 조각을 엮은 로맨스 단편 소설집",
     goal_amount: 4000000,
     current_amount: 6400000,
     deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
@@ -111,13 +111,18 @@ export default async function Home() {
         const percent = Math.min(100, Math.round((project.current_amount / project.goal_amount) * 100))
         const realPercent = Math.round((project.current_amount / project.goal_amount) * 100)
 
-        // 첫 번째 프로젝트 타이틀 및 소개글 동적 변경 적용
+        // 프로젝트 타이틀 및 소개글 동적 변경 적용
         const displayTitle = index === 0 
           ? "서점원들의 밤" 
-          : project.title
+          : index === 1
+          ? "한글 타이포그래피의 유산"
+          : "보내지 못한 다섯 통의 편지"
+
         const displayDescription = index === 0 
           ? "골목 모퉁이, 밤이 깊어 갈수록 빛나는 동네 책방들의 숨겨진 이야기와 따뜻한 일상을 담은 서점 직원들의 위로와 온기를 건네는 기록" 
-          : project.description
+          : index === 1
+          ? "납활자 인쇄 시절부터 현대 디지털 폰트 디자인까지, 한글 자형의 아름다움과 타이포그래피 유산을 정리한 전문 예술 도서"
+          : "독립출판 수상 소설가 5인이 각자 그려내는 사랑에 대한 기억의 조각을 엮은 로맨스 단편 소설집"
 
         return (
           <div key={project.id} className="w-full flex flex-col">
@@ -172,13 +177,13 @@ export default async function Home() {
                 </div>
               </div>
 
-              {/* 하단 3D 책 실물 이미지 전시 영역 (Apple 스타일 단아한 렌더러 - 배경 박스 제거 및 drop-shadow 적용) */}
+              {/* 하단 3D 책 실물 이미지 전시 영역 (Apple 스타일 3D 부유 그림자 적용) */}
               <div className="w-full max-w-5xl px-4 sm:px-6 lg:px-8 mt-12 flex justify-center">
-                <div className="relative w-full max-w-lg aspect-[16/10] flex items-center justify-center select-none py-4">
+                <div className="relative w-full max-w-lg aspect-[16/10] flex items-center justify-center select-none py-4 transition-transform duration-500 hover:scale-[1.02]">
                   <img 
                     src={`/images/book-0${index + 1}.png`} 
                     alt={displayTitle}
-                    className="w-full max-h-[360px] object-contain drop-shadow-[0_25px_45px_rgba(0,0,0,0.22)]"
+                    className="w-full max-h-[360px] object-contain filter drop-shadow-[0_20px_25px_rgba(0,0,0,0.25)] drop-shadow-[0_8px_10px_rgba(0,0,0,0.12)]"
                   />
                 </div>
               </div>
