@@ -52,6 +52,13 @@ export default function AboutPage() {
             </p>
           </div>
         </div>
+
+        {/* 하단 베타 운영 안내 문구 */}
+        <div className="pt-10 pb-16 sm:pb-24 text-center">
+          <p className="text-sm sm:text-base font-bold text-[#C84C15] tracking-tight">
+            현재 MOOKK 서비스는 베타 버전으로 운영 중입니다
+          </p>
+        </div>
       </div>
     </NoticeLayout>
   )

@@ -168,7 +168,7 @@ export default function Header({ initialUser }: HeaderProps) {
       {/* 2. 헤더 아래 딥 그린 서브 띠 배너 */}
       <div className="w-full bg-[#1C4025] py-1.5 px-4 text-center">
         <Link href="/about" className="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm font-semibold text-white hover:text-[#d6f9b4] transition-colors">
-          <span>MOOKK은 오직 종이책만을 위한 크라우드펀딩 출판 서비스입니다</span>
+          <span>현재 MOOKK 서비스는 베타 버전으로 운영 중입니다</span>
           <span className="text-base font-normal">➔</span>
         </Link>
       </div>
