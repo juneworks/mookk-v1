@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function LoginPage() {
@@ -29,6 +28,9 @@ export default function LoginPage() {
   const [signUpName, setSignUpName] = useState('')
   const [signUpRole, setSignUpRole] = useState<'creator' | 'backer'>('backer')
 
+  // 비밀번호 재설정 상태값
+  const [resetEmail, setResetEmail] = useState('')
+
   // 로그인 제출
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -49,7 +51,6 @@ export default function LoginPage() {
 
       setSuccessMessage('로그인에 성공했습니다. 홈으로 이동합니다.')
       
-      // 세션 정보를 동기화하고 홈으로 리다이렉트
       setTimeout(() => {
         router.push('/')
         router.refresh()
@@ -91,8 +92,6 @@ export default function LoginPage() {
         return
       }
 
-      // Supabase 프로젝트 설정에 따라 이메일 인증이 필수가 아니면 즉시 로그인 상태가 됨
-      // 이메일 인증이 활성화되어 있을 경우를 대비한 하이브리드 가이드 문구
       if (data?.session) {
         setSuccessMessage('회원가입이 완료되었습니다. 자동으로 로그인합니다.')
         setTimeout(() => {
@@ -109,13 +108,45 @@ export default function LoginPage() {
     }
   }
 
+  // 비밀번호 재설정 요청
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setErrorMessage(null)
+    setSuccessMessage(null)
+
+    if (!resetEmail.trim()) {
+      setErrorMessage('이메일 주소를 입력해 주세요.')
+      setLoading(false)
+      return
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/login`,
+      })
+
+      if (error) {
+        setErrorMessage(error.message)
+        return
+      }
+
+      setSuccessMessage('입력하신 이메일로 비밀번호 재설정 링크를 발송했습니다. 메일함을 확인해 주세요.')
+    } catch (err: any) {
+      setErrorMessage(err.message || '비밀번호 재설정 메일 발송 중 에러가 발생했습니다.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="flex flex-1 items-center justify-center px-4 py-16 sm:px-6 lg:px-8 bg-zinc-50 dark:bg-zinc-950">
       <div className="w-full max-w-md">
         <Tabs defaultValue="signin" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="signin">로그인</TabsTrigger>
             <TabsTrigger value="signup">회원가입</TabsTrigger>
+            <TabsTrigger value="reset">비밀번호 재설정</TabsTrigger>
           </TabsList>
 
           {/* 에러 및 성공 메시지 노출 */}
@@ -135,7 +166,7 @@ export default function LoginPage() {
             <Card>
               <CardHeader className="space-y-1">
                 <CardTitle className="text-2xl font-bold tracking-tight text-center">
-                  Mookk 로그인
+                  MOOKK 로그인
                 </CardTitle>
                 <CardDescription className="text-center">
                   이메일과 비밀번호를 입력하여 서비스에 로그인하세요.
@@ -167,8 +198,8 @@ export default function LoginPage() {
                     />
                   </div>
                 </CardContent>
-                <CardFooter>
-                  <Button className="w-full" type="submit" disabled={loading}>
+                <CardFooter className="flex flex-col gap-2">
+                  <Button className="w-full bg-[#1C4025] hover:bg-[#15321d] text-white" type="submit" disabled={loading}>
                     {loading ? '로그인 중...' : '로그인'}
                   </Button>
                 </CardFooter>
@@ -181,7 +212,7 @@ export default function LoginPage() {
             <Card>
               <CardHeader className="space-y-1">
                 <CardTitle className="text-2xl font-bold tracking-tight text-center">
-                  Mookk 가입하기
+                  MOOKK 가입하기
                 </CardTitle>
                 <CardDescription className="text-center">
                   새로운 계정을 생성하여 크라우드펀딩에 참여해 보세요.
@@ -242,14 +273,14 @@ export default function LoginPage() {
                         disabled={loading}
                         className={`flex flex-col items-center justify-between rounded-lg border-2 p-4 text-center cursor-pointer transition-all duration-200 outline-none ${
                           signUpRole === 'backer'
-                            ? 'border-zinc-900 bg-zinc-50/80 dark:border-zinc-100 dark:bg-zinc-900/80 shadow-sm'
+                            ? 'border-[#1C4025] bg-[#1C4025]/5 dark:border-[#1C4025] shadow-sm'
                             : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900'
                         }`}
                       >
                         <div className="flex items-center gap-1.5">
-                          <span className="text-sm font-semibold">후원자로 시작</span>
+                          <span className="text-sm font-semibold text-[#1C4025] dark:text-emerald-400">후원자로 시작</span>
                           {signUpRole === 'backer' && (
-                            <span className="flex h-2.5 w-2.5 rounded-full bg-zinc-900 dark:bg-zinc-100 animate-pulse" />
+                            <span className="flex h-2.5 w-2.5 rounded-full bg-[#1C4025] animate-pulse" />
                           )}
                         </div>
                         <span className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5">책 후원 및 결제</span>
@@ -261,14 +292,14 @@ export default function LoginPage() {
                         disabled={loading}
                         className={`flex flex-col items-center justify-between rounded-lg border-2 p-4 text-center cursor-pointer transition-all duration-200 outline-none ${
                           signUpRole === 'creator'
-                            ? 'border-zinc-900 bg-zinc-50/80 dark:border-zinc-100 dark:bg-zinc-900/80 shadow-sm'
+                            ? 'border-[#1C4025] bg-[#1C4025]/5 dark:border-[#1C4025] shadow-sm'
                             : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900'
                         }`}
                       >
                         <div className="flex items-center gap-1.5">
-                          <span className="text-sm font-semibold">저자로 시작</span>
+                          <span className="text-sm font-semibold text-[#1C4025] dark:text-emerald-400">저자로 시작</span>
                           {signUpRole === 'creator' && (
-                            <span className="flex h-2.5 w-2.5 rounded-full bg-zinc-900 dark:bg-zinc-100 animate-pulse" />
+                            <span className="flex h-2.5 w-2.5 rounded-full bg-[#1C4025] animate-pulse" />
                           )}
                         </div>
                         <span className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5">프로젝트 개설 및 정산</span>
@@ -277,8 +308,43 @@ export default function LoginPage() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full" type="submit" disabled={loading}>
+                  <Button className="w-full bg-[#1C4025] hover:bg-[#15321d] text-white" type="submit" disabled={loading}>
                     {loading ? '가입 진행 중...' : '회원가입 완료'}
+                  </Button>
+                </CardFooter>
+              </form>
+            </Card>
+          </TabsContent>
+
+          {/* 3. 비밀번호 재설정 탭 */}
+          <TabsContent value="reset">
+            <Card>
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl font-bold tracking-tight text-center">
+                  비밀번호 재설정
+                </CardTitle>
+                <CardDescription className="text-center">
+                  가입하신 이메일 주소를 입력하시면 비밀번호 재설정 링크를 보내드립니다.
+                </CardDescription>
+              </CardHeader>
+              <form onSubmit={handleResetPassword}>
+                <CardContent className="grid gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="reset-email">가입 이메일 주소</Label>
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      placeholder="name@example.com"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button className="w-full bg-[#1C4025] hover:bg-[#15321d] text-white" type="submit" disabled={loading}>
+                    {loading ? '발송 중...' : '비밀번호 재설정 메일 발송'}
                   </Button>
                 </CardFooter>
               </form>
@@ -289,3 +355,4 @@ export default function LoginPage() {
     </div>
   )
 }
+
