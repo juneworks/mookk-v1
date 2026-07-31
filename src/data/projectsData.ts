@@ -73,8 +73,8 @@ export const sampleProjects: ProjectData[] = [
     publisher_intro: 'MOOKK 출판기획팀은 종이 물성이 가진 특유의 온기와 아날로그 서가를 가꾸는 크라우드펀딩 전용 출판 브랜드입니다.',
     publisher_name: '시인과 연서 출판사',
     goal_amount: 3000000,
-    current_amount: 6450000,
-    backers_count: 215,
+    current_amount: 30120000,
+    backers_count: 1506,
     deadline: '2026-08-05T23:59:59Z', // D-5 (가장 임박)
     cover_image_url: '/images/books/poet_loveletter.png',
     status: 'live',
@@ -114,8 +114,8 @@ export const sampleProjects: ProjectData[] = [
     publisher_intro: '미리문학사는 바다와 자연, 사람의 깊은 이야기를 담은 문학 도서를 전문 기획하는 독립 출판사입니다.',
     publisher_name: '미리문학사',
     goal_amount: 3000000,
-    current_amount: 5340000,
-    backers_count: 178,
+    current_amount: 11340000,
+    backers_count: 667,
     deadline: '2026-08-08T23:59:59Z', // D-8
     cover_image_url: '/images/books/sea_village.png',
     status: 'live',
@@ -155,8 +155,8 @@ export const sampleProjects: ProjectData[] = [
     publisher_intro: 'MOOKK 묵 출판기획은 종이책만이 전달할 수 있는 감성과 질감에 집중하며 독립 작가들의 단단한 출판 펀딩을 돕습니다.',
     publisher_name: 'MOOKK 묵 출판기획',
     goal_amount: 3000000,
-    current_amount: 4250000,
-    backers_count: 142,
+    current_amount: 7260000,
+    backers_count: 403,
     deadline: '2026-08-12T23:59:59Z', // D-12
     cover_image_url: '/images/books/season_cover.webp',
     status: 'live',
@@ -194,8 +194,8 @@ export const sampleProjects: ProjectData[] = [
     publisher_intro: '일상 속 깊은 커피 향처럼 은은한 에세이를 만듭니다.',
     publisher_name: '바리스타 서가',
     goal_amount: 3000000,
-    current_amount: 2580000,
-    backers_count: 86,
+    current_amount: 3180000,
+    backers_count: 198,
     deadline: '2026-08-18T23:59:59Z', // D-18
     cover_image_url: '/images/books/stamp_contract.png',
     status: 'live',
