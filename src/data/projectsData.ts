@@ -211,17 +211,17 @@ export const sampleProjects: ProjectData[] = [
   {
     id: 'mookk-sample-5',
     title: '퇴사하러 출근합니다',
-    subtitle: '퇴사가 하고 싶은데 용기 없는 당신에게 바치는 글',
-    description: '매일, 사표 품고 출근하고 그냥 퇴근하는\n당신에게 전하는 김가현 작가의 퇴사부여 에세이',
-    detail_story: `## 💼 책 소개
-《퇴사하러 출근합니다》는 매일 아침 사직서를 가슴에 품고 지하철에 몸을 싣는 수많은 직장인들에게 건네는 다정한 응원과 공감의 에세이입니다.`,
+    subtitle: '매일, 사표품고 출근하고 그냥 퇴근하는 당신에게 전하는\n김가현 작가의 퇴사부여 에세이',
+    description: '매일, 사표품고 출근하고 그냥 퇴근하는 당신에게 전하는\n김가현 작가의 퇴사부여 에세이',
+    detail_story: `💼 책 소개
+아르바이트와 인턴 2년, 교육 회사의 조교로 1년. 치열한 삶의 현장에서 나만의 꿈을 찾아 결국 퇴사를 결정한 과정과 그 이후의 삶을 브이로그로 연재하며 30만 구독자에게 공감을 얻은 김가현 저자의 퇴사부여 에세이입니다.`,
     features: [
       '직장인 마음을 대변하는 캐릭터 종이 비행기 일러스트 표지',
       '퇴사 고민 노트 쓰기 특별 부록 사양',
       '따뜻한 라이트 크림 내지'
     ],
     spec: {
-      subtitle: '퇴사가 하고 싶은데 용기 없는 당신에게 바치는 글',
+      subtitle: '매일, 사표품고 출근하고 그냥 퇴근하는 당신에게 전하는 김가현 작가의 퇴사부여 에세이',
       size: '128 x 188 mm',
       paper_inner: '미색 모조 90g',
       paper_cover: '스노우 250g',
@@ -229,9 +229,9 @@ export const sampleProjects: ProjectData[] = [
       binding: '무선 제본',
       isbn: '979-11-984321-5-2'
     },
-    author_intro: '김가현 작가. 7년차 직장인이자 퇴사를 꿈꾸며 매일 밤 글을 쓰는 에세이스트.',
-    publisher_intro: '일상의 사소한 틈새에서 진짜 행복을 찾는 도서들을 발간합니다.',
-    publisher_name: '오늘의 출근길',
+    author_intro: "30만 구독자를 보유한 유튜브 '저, 퇴사할가현?' 채널의 운영자. 각종 아르바이트와 2곳의 인턴을 거쳐 IT 교육 회사 조교로 1년을 넘게 근무한 후, 홀연히 퇴사를 결심해 현재는 본인의 추구미를 담은 책 관련 미디어 플랫폼 창업을 준비 중.",
+    publisher_intro: '천재 기획자로 불리는 김준 대표가 운영하는 개인의 브랜딩과 스토리텔링에 특화된 에세이 및 잡지 전문 출판사',
+    publisher_name: '김준사',
     goal_amount: 2500000,
     current_amount: 0,
     backers_count: 0,
@@ -241,7 +241,8 @@ export const sampleProjects: ProjectData[] = [
     creator_name: '김가현',
     category: '에세이',
     rewards: [
-      { id: 'r5-1', title: '알림 신청 전용 혜택', price: 16500, description: '도서 1권 + 퇴사 일기 부록 노트' }
+      { id: 'r5-1', title: '알림 신청 전용 혜택', price: 16500, description: '도서 1권 + 퇴사 일기 부록 노트' },
+      { id: 'r5-2', title: '[VIP 패키지] 도서 + 굿즈 + 저자와의 만남', price: 70000, description: '도서 1권 + 퇴사 일기 부록 노트 + 퇴사요정인형 키링 + 저자와의 만남 초대권' }
     ]
   },
 
