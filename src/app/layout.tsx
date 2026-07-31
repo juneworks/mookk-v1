@@ -11,6 +11,17 @@ export const metadata: Metadata = {
   },
   description: '디지털 시대 속에서도 변함없는 가치를 지닌 종이책 크라우드펀딩 플랫폼 MOOKK에서 특별한 독립 출판 프로젝트를 만나보세요.',
   keywords: ['MOOKK', '묵', '종이책', '크라우드펀딩', '독립출판', '북펀딩', '에세이', '소설', '리워드'],
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon.png', type: 'image/png' },
+      { url: '/favicon.ico' },
+    ],
+    shortcut: ['/favicon.ico'],
+    apple: [
+      { url: '/apple-icon.png' },
+    ],
+  },
   openGraph: {
     title: 'MOOKK - 오직 종이책만을 위한 크라우드펀딩 출판 플랫폼',
     description: '작가와 독자가 함께 종이책 실물 형태의 꿈을 현실로 만들어가는 크라우드펀딩 공간입니다.',
