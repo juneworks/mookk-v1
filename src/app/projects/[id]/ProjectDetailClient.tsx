@@ -275,7 +275,7 @@ export default function ProjectDetailClient({
             {project.title}
           </h1>
           {project.subtitle && (
-            <p className="text-lg sm:text-xl text-[#1C4025]/70 font-light max-w-2xl font-eulyoo">
+            <p className="text-lg sm:text-xl text-[#1C4025]/70 font-light max-w-2xl font-eulyoo whitespace-pre-line">
               {project.subtitle}
             </p>
           )}
