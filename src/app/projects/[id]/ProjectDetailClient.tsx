@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createClient } from '@/utils/supabase/client'
+import MobileFloatingCTA from '@/components/MobileFloatingCTA'
 import {
   Dialog,
   DialogContent,
@@ -23,14 +24,32 @@ interface Reward {
   description: string
 }
 
+interface BookSpec {
+  subtitle?: string
+  size?: string
+  paper_inner?: string
+  paper_cover?: string
+  pages?: string
+  binding?: string
+  isbn?: string
+}
+
 interface Project {
   id: string
   title: string
+  subtitle?: string
   description: string
+  detail_story?: string
+  features?: { title: string; description: string; icon: string }[]
+  spec?: BookSpec
+  author_intro?: string
+  publisher_intro?: string
+  publisher_name?: string
   goal_amount: number
   current_amount: number
   deadline: string
   cover_image_url: string | null
+  status?: string
   User: {
     name: string
   } | null
@@ -62,6 +81,13 @@ export default function ProjectDetailClient({
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
+  // 게시판 상태 (소식 및 소통)
+  const [qaList, setQaList] = useState([
+    { id: 1, author: '서점사랑독자', content: '양장본 하드커버 가름끈 색상은 무슨 색인가요?', answer: '안녕하세요! 가름끈은 에메랄드 그린 컬러로 제작될 예정입니다.' },
+    { id: 2, author: '글쓰는민재', content: '배송 시 에어캡 안전 포장되나요?', answer: '네, 도서 모서리가 손상되지 않도록 에어캡 안전 봉투로 밀봉 배송됩니다.' }
+  ])
+  const [newQuestion, setNewQuestion] = useState('')
+
   // 배송 및 결제 폼 상태
   const [amount, setAmount] = useState('')
   const [shippingName, setShippingName] = useState('')
@@ -69,7 +95,9 @@ export default function ProjectDetailClient({
   const [shippingAddress, setShippingAddress] = useState('')
 
   // 남은 일수 계산
-  const getDaysRemaining = (deadlineStr: string) => {
+  const getDaysRemaining = (deadlineStr: string, status?: string) => {
+    if (status === 'succeeded' || status === 'failed') return '마감됨'
+    if (status === 'upcoming') return '오픈 예정'
     const deadline = new Date(deadlineStr)
     const today = new Date()
     const diffTime = deadline.getTime() - today.getTime()
@@ -77,23 +105,28 @@ export default function ProjectDetailClient({
     return diffDays > 0 ? `${diffDays}일` : '마감됨'
   }
 
-  const daysLeft = getDaysRemaining(project.deadline)
+  const daysLeft = getDaysRemaining(project.deadline, project.status)
   const isFinished = daysLeft === '마감됨'
+  const isUpcoming = project.status === 'upcoming'
 
-  const percent = Math.min(
-    100,
-    Math.round((project.current_amount / project.goal_amount) * 100)
-  )
-  const realPercent = Math.round((project.current_amount / project.goal_amount) * 100)
+  const percent = project.goal_amount > 0 
+    ? Math.min(100, Math.round((project.current_amount / project.goal_amount) * 100))
+    : 0
+  const realPercent = project.goal_amount > 0 
+    ? Math.round((project.current_amount / project.goal_amount) * 100)
+    : 0
 
-  const coverStyle = project.cover_image_url?.startsWith('linear-gradient')
-    ? { backgroundImage: project.cover_image_url }
-    : project.cover_image_url
-    ? { backgroundImage: `url(${project.cover_image_url})` }
-    : { backgroundImage: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }
+  const coverSrc = project.cover_image_url || '/images/book-01.png'
+  const creatorName = project.User?.name || '창작 작가'
+  const publisherName = project.publisher_name || 'MOOKK 아틀리에 출판'
 
   // 후원 리워드 클릭 핸들러
   const handleSelectReward = (reward: Reward) => {
+    if (isUpcoming) {
+      alert('오픈 알림 신청이 완료되었습니다! 펀딩 개설 당일 소식을 전해드립니다.')
+      return
+    }
+
     if (!currentUser) {
       alert('후원하려면 로그인이 필요합니다. 로그인 페이지로 이동합니다.')
       router.push('/login')
@@ -101,7 +134,7 @@ export default function ProjectDetailClient({
     }
 
     if (currentUser.role === 'creator') {
-      alert('창작자 계정으로는 본인 또는 타 프로젝트에 후원(Backer)할 수 없습니다. 후원자 계정으로 로그인해 주세요.')
+      alert('창작자 계정으로는 본인 또는 타 프로젝트에 후원할 수 없습니다. 후원자 계정으로 로그인해 주세요.')
       return
     }
 
@@ -116,6 +149,31 @@ export default function ProjectDetailClient({
     setModalOpen(true)
   }
 
+  // Floating CTA 클릭 핸들러
+  const handleFloatingCTAClick = () => {
+    const targetElement = document.getElementById('rewards-selection-section')
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  // 문의하기 등록 제출
+  const handleAddQuestion = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newQuestion.trim()) return
+    setQaList([
+      ...qaList,
+      {
+        id: Date.now(),
+        author: '후원자님',
+        content: newQuestion,
+        answer: '창작자가 문의 내용을 확인 후 빠른 시일 내 답변을 등록할 예정입니다.'
+      }
+    ])
+    setNewQuestion('')
+    alert('문의 내용이 정상적으로 등록되었습니다.')
+  }
+
   // 가상 결제 예약 제출 처리
   const handlePledgeSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -124,7 +182,6 @@ export default function ProjectDetailClient({
     setLoading(true)
     setErrorMsg(null)
 
-    // 검증
     const pledgeAmount = parseInt(amount, 10)
     if (isNaN(pledgeAmount) || pledgeAmount < selectedReward.price) {
       setErrorMsg(`최소 후원 금액은 ${selectedReward.price.toLocaleString()}원 이상이어야 합니다.`)
@@ -139,21 +196,18 @@ export default function ProjectDetailClient({
     }
 
     try {
-      // 가상 빌링키 생성
       const mockBillingKey = `mock_billing_key_${Math.random().toString(36).substring(2, 10)}${Date.now().toString().slice(-4)}`
 
-      // 1. 가상 프로젝트(mock-1 등)일 경우 실제 DB 인서트를 우회하고 모의 성공 처리
-      if (project.id.startsWith('mock-')) {
+      if (project.id.startsWith('mock-') || project.id.startsWith('mookk-')) {
         setTimeout(() => {
           setLoading(false)
           setModalOpen(false)
-          alert(`[시뮬레이션 완료] 가상 프로젝트 후원 예약이 가상 완료되었습니다!\n\n후원 리워드: ${selectedReward.title}\n후원 금액: ${pledgeAmount.toLocaleString()}원\n배송 정보: ${shippingName}님 / ${shippingPhone}\n가상 빌링키: ${mockBillingKey}`)
-          router.push('/')
-        }, 1000)
+          alert(`[시뮬레이션 완료] 가상 프로젝트 후원 예약이 정상 완료되었습니다!\n\n후원 리워드: ${selectedReward.title}\n후원 금액: ${pledgeAmount.toLocaleString()}원\n배송 수령인: ${shippingName}님 (${shippingPhone})\n가상 빌링키: ${mockBillingKey}`)
+          router.push('/mypage')
+        }, 800)
         return
       }
 
-      // 2. 실존 프로젝트일 경우 DB Pledge 테이블에 인서트 실행
       const { error: pledgeError } = await supabase
         .from('Pledge')
         .insert({
@@ -172,23 +226,16 @@ export default function ProjectDetailClient({
         throw new Error(`후원 정보 저장 실패: ${pledgeError.message}`)
       }
 
-      // 3. 프로젝트의 current_amount 누적 업데이트
-      // (현 펀딩 플랫폼의 실시간 반영을 위해, 후원 성공 시 해당 프로젝트의 current_amount를 누적 가산해 줍니다.)
       const newCurrentAmount = project.current_amount + pledgeAmount
-      const { error: updateError } = await supabase
+      await supabase
         .from('Project')
         .update({ current_amount: newCurrentAmount })
         .eq('id', project.id)
 
-      if (updateError) {
-        console.warn("Failed to update project current amount:", updateError.message)
-      }
-
       setLoading(false)
       setModalOpen(false)
-      alert(`[후원 성공] 가상 결제 예약이 정상 완료되었습니다!\n프로젝트가 마감(성공)되면 가상 빌링키를 통해 일괄 승인 결제됩니다.\n\n후원 가격: ${pledgeAmount.toLocaleString()}원\n배송 수령인: ${shippingName}`)
+      alert(`[후원 성공] 가상 결제 예약이 완료되었습니다!\n마감일에 가상 빌링키로 일괄 결제됩니다.\n\n후원 가격: ${pledgeAmount.toLocaleString()}원\n수령인: ${shippingName}`)
       
-      // 마이페이지 또는 홈으로 이동
       router.push('/mypage')
       router.refresh()
     } catch (err: any) {
@@ -198,147 +245,426 @@ export default function ProjectDetailClient({
     }
   }
 
+  const minPrice = rewards.length > 0 ? Math.min(...rewards.map(r => r.price)).toLocaleString() + '원부터~' : '18,000원부터~'
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 bg-zinc-50 dark:bg-zinc-950">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* 좌측: 책 기획 상세 정보 */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* 큰 커버 영역 */}
-          <div
-            style={coverStyle}
-            className="aspect-[16/10] w-full bg-cover bg-center rounded-2xl border border-zinc-200 dark:border-zinc-800 relative flex items-center justify-center p-8 shadow-sm"
-          >
-            {project.category && (
-              <span className="absolute top-4 left-4 rounded-full bg-black/70 px-3 py-1 text-xs font-bold text-white tracking-wider backdrop-blur-sm">
-                {project.category}
-              </span>
-            )}
-            {!project.cover_image_url && (
-              <div className="text-center font-serif text-xl font-bold max-w-md text-zinc-800 px-6 py-4 bg-white/90 rounded-lg shadow-md backdrop-blur-sm">
-                {project.title}
-              </div>
-            )}
+    <div className="w-full bg-[#F4F3EF] text-[#1C4025] min-h-screen font-sans pb-24">
+      
+      {/* ========================================================================= */}
+      {/* 1) 소개 영역 (애플 스타일 1단 전면 구성) */}
+      {/* ========================================================================= */}
+
+      {/* 1-1. 메인 히어로 (도서 3D 실물 이미지, 타이틀, 펀딩 지표) */}
+      <section className="w-full bg-[#F0EEE9] pt-20 pb-20 border-b border-[#1C4025]/10 text-center flex flex-col items-center">
+        <div className="mx-auto max-w-4xl px-4 space-y-6 flex flex-col items-center">
+          
+          {/* 카테고리 / D-Day 뱃지 */}
+          <div className="flex items-center gap-2 text-xs font-bold">
+            <span className="rounded-full bg-[#c84b15] px-3 py-1 text-white text-[10px] uppercase font-extrabold shadow-2xs">
+              {project.category || '도서'}
+            </span>
+            <span className="text-[#1C4025]/60">by {creatorName}</span>
+            <span className="text-[#1C4025]/40">•</span>
+            <span className="rounded-full bg-[#1C4025]/10 px-3 py-0.5 text-[#1C4025] text-xs font-bold">
+              {daysLeft}
+            </span>
           </div>
 
-          {/* 도서 상세 기획 소개 */}
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 sm:p-8 border border-zinc-200 dark:border-zinc-800 space-y-6">
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 border-b border-zinc-100 dark:border-zinc-800 pb-3">
-              도서 기획 소개 및 줄거리
+          {/* 대형 타이틀 및 부제 */}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[#1C4025] leading-tight max-w-3xl">
+            {project.title}
+          </h1>
+          {project.subtitle && (
+            <p className="text-lg sm:text-xl text-[#1C4025]/70 font-light max-w-2xl font-eulyoo">
+              {project.subtitle}
+            </p>
+          )}
+
+          {/* 3D 도서 실물 렌더링 이미지 */}
+          <div className="w-full max-w-lg py-8 flex justify-center">
+            <img
+              src={coverSrc}
+              alt={project.title}
+              className="max-h-[380px] sm:max-h-[440px] object-contain filter drop-shadow-[0_30px_35px_rgba(0,0,0,0.35)] transition-transform duration-700 hover:scale-[1.03]"
+            />
+          </div>
+
+          {/* 펀딩 현황 지표 카드 (애플 지표 스타일) */}
+          <div className="w-full max-w-xl bg-white/80 backdrop-blur-md rounded-2xl p-6 border border-[#1C4025]/10 shadow-sm space-y-4">
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div>
+                <p className="text-[11px] font-bold text-[#1C4025]/50">현재 모금액</p>
+                <p className="text-lg sm:text-xl font-black text-[#1C4025] mt-1">
+                  {project.current_amount.toLocaleString()}원
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold text-[#1C4025]/50">달성률</p>
+                <p className="text-lg sm:text-xl font-black text-[#c84b15] mt-1">
+                  {realPercent}%
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold text-[#1C4025]/50">후원자 수</p>
+                <p className="text-lg sm:text-xl font-black text-[#1C4025] mt-1">
+                  {pledgesCount}명
+                </p>
+              </div>
+            </div>
+
+            {/* 게이지 바 */}
+            <div className="space-y-1">
+              <div className="h-2.5 w-full bg-[#1C4025]/10 rounded-full overflow-hidden">
+                <div
+                  style={{ width: `${percent}%` }}
+                  className="h-full bg-[#1C4025] rounded-full transition-all duration-700"
+                />
+              </div>
+              <div className="flex justify-between text-[10px] font-semibold text-[#1C4025]/60">
+                <span>목표 금액: {project.goal_amount.toLocaleString()}원</span>
+                <span>마감까지 {daysLeft}</span>
+              </div>
+            </div>
+
+            {/* 펀딩 참여 CTA 버튼 */}
+            <div className="pt-2 flex justify-center gap-3">
+              <button
+                onClick={() => {
+                  const el = document.getElementById('rewards-selection-section')
+                  if (el) el.scrollIntoView({ behavior: 'smooth' })
+                }}
+                className="px-8 py-3.5 rounded-full bg-[#1C4025] text-[#d6f9b4] font-extrabold text-sm hover:bg-[#1C4025]/90 transition-all shadow-md"
+              >
+                리워드선택 및 후원하기
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 1-2. 프로젝트 소개 (Apple 스토리텔링 스타일) */}
+      <section className="w-full py-20 border-b border-[#1C4025]/10 bg-white">
+        <div className="mx-auto max-w-3xl px-4 space-y-8">
+          <div className="text-center space-y-3">
+            <span className="text-xs font-extrabold tracking-widest text-[#c84b15] uppercase">
+              PROJECT STORY
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#1C4025]">
+              프로젝트 소개
             </h2>
-            <div className="text-zinc-600 dark:text-zinc-300 space-y-4 text-sm leading-relaxed whitespace-pre-line font-sans">
-              {project.description}
+          </div>
+
+          <div className="text-base sm:text-lg text-[#1C4025]/85 leading-relaxed font-light whitespace-pre-line space-y-6 font-eulyoo">
+            {project.detail_story || project.description}
+          </div>
+        </div>
+      </section>
+
+      {/* 1-3. 책 상세 스펙 (애플 스타일 라운딩 그리드 카체) */}
+      <section className="w-full py-20 border-b border-[#1C4025]/10 bg-[#F4F3EF]">
+        <div className="mx-auto max-w-4xl px-4 space-y-10">
+          <div className="text-center space-y-3">
+            <span className="text-xs font-extrabold tracking-widest text-[#1C4025]/60 uppercase">
+              BOOK SPECIFICATIONS
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#1C4025]">
+              책 상세 스펙
+            </h2>
+          </div>
+
+          {/* 6개 스펙 라운딩 카드 그리드 */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="p-6 bg-white rounded-2xl border border-[#1C4025]/10 shadow-2xs space-y-2">
+              <span className="text-xs font-bold text-[#1C4025]/50">도서 제목 & 부제</span>
+              <p className="font-extrabold text-base text-[#1C4025]">{project.title}</p>
+              <p className="text-xs text-[#1C4025]/70 font-light">{project.spec?.subtitle || project.subtitle || '-'}</p>
+            </div>
+
+            <div className="p-6 bg-white rounded-2xl border border-[#1C4025]/10 shadow-2xs space-y-2">
+              <span className="text-xs font-bold text-[#1C4025]/50">판형 (규격)</span>
+              <p className="font-extrabold text-base text-[#1C4025]">{project.spec?.size || '128 x 188 mm (B6 변형)'}</p>
+              <p className="text-xs text-[#1C4025]/70 font-light">손에 쏙 들어오는 소장형 수제 사이즈</p>
+            </div>
+
+            <div className="p-6 bg-white rounded-2xl border border-[#1C4025]/10 shadow-2xs space-y-2">
+              <span className="text-xs font-bold text-[#1C4025]/50">내지 / 표지 종이</span>
+              <p className="font-extrabold text-base text-[#1C4025]">{project.spec?.paper_inner || '몽블랑 100g'}</p>
+              <p className="text-xs text-[#1C4025]/70 font-light">표지: {project.spec?.paper_cover || '양장 천지원단'}</p>
+            </div>
+
+            <div className="p-6 bg-white rounded-2xl border border-[#1C4025]/10 shadow-2xs space-y-2">
+              <span className="text-xs font-bold text-[#1C4025]/50">페이지 수 & 제본</span>
+              <p className="font-extrabold text-base text-[#1C4025]">{project.spec?.pages || '220쪽 내외'}</p>
+              <p className="text-xs text-[#1C4025]/70 font-light">제본: {project.spec?.binding || '양장본 (하드커버)'}</p>
+            </div>
+
+            <div className="p-6 bg-white rounded-2xl border border-[#1C4025]/10 shadow-2xs space-y-2">
+              <span className="text-xs font-bold text-[#1C4025]/50">국제표준도서번호 (ISBN)</span>
+              <p className="font-extrabold text-base text-[#1C4025]">{project.spec?.isbn || '979-11-984021-0-1'}</p>
+              <p className="text-xs text-[#1C4025]/70 font-light">정식 서지정보 등록 완료</p>
+            </div>
+
+            <div className="p-6 bg-white rounded-2xl border border-[#1C4025]/10 shadow-2xs space-y-2">
+              <span className="text-xs font-bold text-[#1C4025]/50">발간 & 배송 예정일</span>
+              <p className="font-extrabold text-base text-[#1C4025]">마감 후 14일 이내</p>
+              <p className="text-xs text-[#1C4025]/70 font-light">안전 에어캡 개별 팩 포장 발송</p>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* 우측: 펀딩 상태 스티키 위젯 및 리워드 목록 */}
-        <div className="space-y-6 lg:sticky lg:top-20 h-fit">
-          <Card className="shadow-xs">
-            <CardHeader className="space-y-2">
-              <span className="text-xs text-primary font-bold tracking-wider">
-                펀딩 진행 중 ({daysLeft} 남음)
-              </span>
-              <CardTitle className="text-2xl font-bold leading-tight">
-                {project.title}
-              </CardTitle>
-              <CardDescription className="text-xs">
-                by {project.User?.name || '창작자'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* 모금 현황 지표 */}
-              <div className="grid grid-cols-3 gap-2 text-center border-y border-zinc-100 dark:border-zinc-800 py-4">
-                <div>
-                  <p className="text-[10px] text-zinc-400">모금액</p>
-                  <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-1">
-                    {project.current_amount.toLocaleString()}원
-                  </p>
+      {/* 1-4 & 1-5. 저자 소개 및 출판사 소개 카드 */}
+      <section className="w-full py-20 border-b border-[#1C4025]/10 bg-white">
+        <div className="mx-auto max-w-4xl px-4 space-y-10">
+          <div className="text-center space-y-3">
+            <span className="text-xs font-extrabold tracking-widest text-[#1C4025]/60 uppercase">
+              CREATOR & PUBLISHER
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#1C4025]">
+              저자 및 출판사 소개
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* 저자 카드 */}
+            <div className="p-8 bg-[#F4F3EF] rounded-2xl border border-[#1C4025]/10 space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-[#1C4025] text-[#d6f9b4] flex items-center justify-center font-bold text-xl shadow-xs">
+                  {creatorName.substring(0, 1)}
                 </div>
                 <div>
-                  <p className="text-[10px] text-zinc-400">달성률</p>
-                  <p className="text-sm font-bold text-primary mt-1">
-                    {realPercent}%
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-zinc-400">후원자수</p>
-                  <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-1">
-                    {pledgesCount}명
-                  </p>
+                  <span className="text-xs font-bold text-[#c84b15]">저자 (Author)</span>
+                  <h3 className="text-xl font-extrabold text-[#1C4025]">{creatorName}</h3>
                 </div>
               </div>
+              <p className="text-sm text-[#1C4025]/80 font-light leading-relaxed">
+                {project.author_intro || '책에 마음을 담아 따뜻한 글로 세상을 잇는 창작 작가입니다.'}
+              </p>
+            </div>
 
-              {/* 게이지 바 */}
-              <div className="space-y-1">
-                <div className="h-2 w-full bg-zinc-100 rounded-full overflow-hidden dark:bg-zinc-800">
-                  <div
-                    style={{ width: `${percent}%` }}
-                    className="h-full bg-primary rounded-full transition-all duration-500"
-                  />
+            {/* 출판사 카드 */}
+            <div className="p-8 bg-[#F4F3EF] rounded-2xl border border-[#1C4025]/10 space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-[#c84b15] text-white flex items-center justify-center font-bold text-xl shadow-xs">
+                  {publisherName.substring(0, 1)}
                 </div>
-                <p className="text-[10px] text-zinc-400 text-right">
-                  목표 금액: {project.goal_amount.toLocaleString()}원
-                </p>
+                <div>
+                  <span className="text-xs font-bold text-[#1C4025]/60">출판 브랜드 (Publisher)</span>
+                  <h3 className="text-xl font-extrabold text-[#1C4025]">{publisherName}</h3>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+              <p className="text-sm text-[#1C4025]/80 font-light leading-relaxed">
+                {project.publisher_intro || '오직 종이의 수제 질감과 만듦새에 집중하는 소규모 크라우드펀딩 출판사입니다.'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-          {/* 리워드 선택 목록 */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-300 px-1">
-              후원 리워드 선택
-            </h3>
-            
-            {rewards.map((reward) => (
-              <Card
-                key={reward.id}
-                className="hover:border-zinc-900 dark:hover:border-zinc-100 transition-all cursor-pointer relative overflow-hidden group"
-                onClick={() => handleSelectReward(reward)}
-              >
-                <CardHeader className="p-4 pb-2">
-                  <CardTitle className="text-sm font-bold text-zinc-900 dark:text-zinc-50 group-hover:text-primary transition-colors">
-                    {reward.title}
-                  </CardTitle>
-                  <CardDescription className="text-primary text-base font-extrabold mt-1">
-                    {reward.price.toLocaleString()}원 이상 후원
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-4 pt-0 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                  {reward.description}
-                </CardContent>
-                <CardFooter className="p-4 pt-0 flex justify-end">
-                  <Button size="xs" variant="outline" className="text-[10px] h-7 px-3">
-                    이 리워드로 후원하기
-                  </Button>
-                </CardFooter>
-              </Card>
+      {/* 1-6. 책 특징 (Apple 하이라이트 박스) */}
+      <section className="w-full py-20 border-b border-[#1C4025]/10 bg-[#F4F3EF]">
+        <div className="mx-auto max-w-4xl px-4 space-y-10">
+          <div className="text-center space-y-3">
+            <span className="text-xs font-extrabold tracking-widest text-[#c84b15] uppercase">
+              KEY HIGHLIGHTS
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#1C4025]">
+              책의 핵심 특징
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {(project.features || [
+              { title: "양각 금박 양장본", description: "소장 가치를 극대화한 하드커버 고급 양장 제본", icon: "✨" },
+              { title: "몽블랑 100g 수입지", description: "눈이 편안하고 가벼운 최고급 자연 미색지", icon: "📖" },
+              { title: "4계절 일러스트 엽서", description: "전 수량 4계절 감성 일러스트 엽서 포함", icon: "🎨" },
+              { title: "후원자 명단 헌정", description: "판권지에 모든 후원자 성함 소중히 인쇄", icon: "✒️" }
+            ]).map((feat, idx) => (
+              <div key={idx} className="p-6 bg-white rounded-2xl border border-[#1C4025]/10 shadow-2xs flex items-start gap-4">
+                <span className="text-3xl">{feat.icon}</span>
+                <div className="space-y-1">
+                  <h4 className="font-extrabold text-base text-[#1C4025]">{feat.title}</h4>
+                  <p className="text-xs text-[#1C4025]/75 font-light leading-relaxed">{feat.description}</p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
+      </section>
 
-      </div>
+      {/* ========================================================================= */}
+      {/* 2) 리워드 선택 (펀딩) 섹션 */}
+      {/* ========================================================================= */}
+      <section id="rewards-selection-section" className="w-full py-20 border-b border-[#1C4025]/10 bg-white">
+        <div className="mx-auto max-w-4xl px-4 space-y-10">
+          <div className="text-center space-y-3">
+            <span className="text-xs font-extrabold tracking-widest text-[#1C4025]/60 uppercase">
+              SELECT REWARD
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#1C4025]">
+              리워드 선택 (펀딩)
+            </h2>
+            <p className="text-sm text-[#1C4025]/70 font-light max-w-md mx-auto">
+              원하시는 리워드 구성 옵션을 선택하여 예약을 완료해 주세요.<br />
+              마감일까지 모금 목표가 달성되면 후원이 최종 승인됩니다.
+            </p>
+          </div>
 
-      {/* 3. 가상 예약결제 및 배송 정보 입력 Dialog 모달 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {rewards.map((reward) => (
+              <div
+                key={reward.id}
+                onClick={() => handleSelectReward(reward)}
+                className="p-8 bg-[#F4F3EF] rounded-2xl border border-[#1C4025]/15 hover:border-[#1C4025] hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-6 group"
+              >
+                <div className="space-y-3">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-2xl font-black text-[#1C4025]">
+                      {reward.price.toLocaleString()}원
+                    </span>
+                    <span className="text-xs font-extrabold text-[#c84b15] group-hover:underline">
+                      후원하기 →
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-extrabold text-[#1C4025] group-hover:text-[#c84b15] transition-colors">
+                    {reward.title}
+                  </h3>
+                  <p className="text-xs text-[#1C4025]/80 font-light leading-relaxed">
+                    {reward.description}
+                  </p>
+                </div>
+
+                <Button className="w-full py-3 bg-[#1C4025] text-[#d6f9b4] hover:bg-[#1C4025]/90 text-xs font-bold rounded-xl shadow-xs">
+                  이 리워드로 후원 참여하기
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 3) 소식 및 소통 섹션 (게시판 형태) */}
+      {/* ========================================================================= */}
+      <section className="w-full py-20 bg-[#F4F3EF]">
+        <div className="mx-auto max-w-4xl px-4 space-y-10">
+          <div className="text-center space-y-3">
+            <span className="text-xs font-extrabold tracking-widest text-[#c84b15] uppercase">
+              NEWS & COMMUNITY
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#1C4025]">
+              소식 및 소통
+            </h2>
+            <p className="text-sm text-[#1C4025]/70 font-light">
+              창작자의 최신 제작 소식과 후원자분들의 문의글을 함께 나누는 공간입니다.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* 3-1. 창작자 소식 게시판 */}
+            <div className="bg-white rounded-2xl p-6 border border-[#1C4025]/10 space-y-6 shadow-2xs">
+              <div className="flex items-center justify-between border-b border-[#1C4025]/10 pb-4">
+                <h3 className="font-extrabold text-base text-[#1C4025] flex items-center gap-2">
+                  📢 창작자 새소식
+                </h3>
+                <span className="text-xs font-bold text-[#c84b15]">최신 1건</span>
+              </div>
+
+              <div className="space-y-4">
+                <div className="p-4 bg-[#F4F3EF] rounded-xl space-y-2 text-xs border border-[#1C4025]/10">
+                  <div className="flex justify-between text-[#1C4025]/50 font-bold">
+                    <span className="text-[#c84b15]">[공지] 오픈 인사</span>
+                    <span>2026.07.28</span>
+                  </div>
+                  <h4 className="font-extrabold text-sm text-[#1C4025]">
+                    🎉 《{project.title}》 프로젝트가 성공적으로 오픈되었습니다!
+                  </h4>
+                  <p className="text-[#1C4025]/80 font-light leading-relaxed">
+                    많은 후원과 관심에 깊이 감사드립니다. 정성스런 제작 과정과 도서 감리 현장을 소식 탭을 통해 지속적으로 공유해 드리겠습니다.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 3-2. 후원자 문의 & Q&A 게시판 */}
+            <div className="bg-white rounded-2xl p-6 border border-[#1C4025]/10 space-y-6 shadow-2xs">
+              <div className="flex items-center justify-between border-b border-[#1C4025]/10 pb-4">
+                <h3 className="font-extrabold text-base text-[#1C4025] flex items-center gap-2">
+                  💬 후원자 문의 & Q&A
+                </h3>
+                <span className="text-xs font-bold text-[#1C4025]/60">총 {qaList.length}건</span>
+              </div>
+
+              {/* 문의 작성 폼 */}
+              <form onSubmit={handleAddQuestion} className="space-y-3 bg-[#F4F3EF] p-4 rounded-xl">
+                <textarea
+                  value={newQuestion}
+                  onChange={(e) => setNewQuestion(e.target.value)}
+                  placeholder="창작자에게 도서나 배송 관련 문의를 남겨주세요."
+                  className="w-full p-3 rounded-lg border border-[#1C4025]/20 text-xs focus:outline-none focus:ring-1 focus:ring-[#1C4025] bg-white"
+                  rows={2}
+                />
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-[#1C4025] text-[#d6f9b4] rounded-lg text-xs font-bold hover:bg-[#1C4025]/90 transition-all"
+                  >
+                    문의 남기기
+                  </button>
+                </div>
+              </form>
+
+              {/* Q&A 목록 */}
+              <div className="space-y-3">
+                {qaList.map((qa) => (
+                  <div key={qa.id} className="p-4 border border-[#1C4025]/10 rounded-xl space-y-2 text-xs">
+                    <div className="font-extrabold text-[#1C4025] flex justify-between">
+                      <span>Q. {qa.content}</span>
+                      <span className="text-[#1C4025]/40 font-normal">{qa.author}</span>
+                    </div>
+                    <div className="pl-3 border-l-2 border-[#1C4025]/30 text-[#1C4025]/80 pt-1">
+                      <span className="font-bold text-[#c84b15]">A. </span>
+                      <span>{qa.answer}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 모바일 하단 Floating CTA 바 */}
+      <MobileFloatingCTA
+        status={project.status || 'live'}
+        percent={realPercent}
+        priceRange={minPrice}
+        onPledgeClick={handleFloatingCTAClick}
+      />
+
+      {/* 가상 예약결제 및 배송 정보 입력 Dialog 모달 */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="sm:max-w-[480px]">
+        <DialogContent className="sm:max-w-[480px] bg-white text-[#1C4025]">
           <DialogHeader>
-            <DialogTitle>후원금 설정 및 배송 정보 입력</DialogTitle>
-            <DialogDescription>
-              선택한 리워드: <strong className="text-zinc-900 dark:text-zinc-100">{selectedReward?.title}</strong>
+            <DialogTitle className="text-lg font-extrabold text-[#1C4025]">
+              후원금 설정 및 배송 정보 입력
+            </DialogTitle>
+            <DialogDescription className="text-xs text-[#1C4025]/70">
+              선택한 리워드: <strong className="text-[#1C4025] font-bold">{selectedReward?.title}</strong>
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handlePledgeSubmit} className="space-y-4 pt-2">
             {errorMsg && (
-              <div className="rounded-md bg-red-50 p-3 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300 border border-red-200 dark:border-red-900">
+              <div className="rounded-md bg-red-50 p-3 text-xs text-red-700 border border-red-200">
                 {errorMsg}
               </div>
             )}
 
             {/* 후원 금액 */}
-            <div className="grid gap-2">
-              <Label htmlFor="amount">후원할 최종 금액 (원)</Label>
+            <div className="grid gap-1.5">
+              <Label htmlFor="amount" className="text-xs font-bold">후원할 최종 금액 (원)</Label>
               <Input
                 id="amount"
                 type="number"
@@ -346,15 +672,16 @@ export default function ProjectDetailClient({
                 onChange={(e) => setAmount(e.target.value)}
                 required
                 disabled={loading}
+                className="text-xs border-[#1C4025]/20 focus:ring-[#1C4025]"
               />
-              <p className="text-[10px] text-zinc-400">
-                최소 금액: {selectedReward?.price.toLocaleString()}원 (원하는 경우 금액을 높여 추가 후원할 수 있습니다.)
+              <p className="text-[10px] text-[#1C4025]/50">
+                최소 금액: {selectedReward?.price.toLocaleString()}원 (원하는 경우 금액을 높여 추가 후원 가능)
               </p>
             </div>
 
             {/* 수령인 */}
-            <div className="grid gap-2">
-              <Label htmlFor="shippingName">수령인 실명</Label>
+            <div className="grid gap-1.5">
+              <Label htmlFor="shippingName" className="text-xs font-bold">수령인 실명</Label>
               <Input
                 id="shippingName"
                 placeholder="홍길동"
@@ -362,12 +689,13 @@ export default function ProjectDetailClient({
                 onChange={(e) => setShippingName(e.target.value)}
                 required
                 disabled={loading}
+                className="text-xs border-[#1C4025]/20 focus:ring-[#1C4025]"
               />
             </div>
 
             {/* 연락처 */}
-            <div className="grid gap-2">
-              <Label htmlFor="shippingPhone">수령인 연락처</Label>
+            <div className="grid gap-1.5">
+              <Label htmlFor="shippingPhone" className="text-xs font-bold">수령인 연락처</Label>
               <Input
                 id="shippingPhone"
                 placeholder="010-1234-5678"
@@ -375,17 +703,18 @@ export default function ProjectDetailClient({
                 onChange={(e) => setShippingPhone(e.target.value)}
                 required
                 disabled={loading}
+                className="text-xs border-[#1C4025]/20 focus:ring-[#1C4025]"
               />
             </div>
 
             {/* 주소 */}
-            <div className="grid gap-2">
-              <Label htmlFor="shippingAddress">상세 배송 주소</Label>
+            <div className="grid gap-1.5">
+              <Label htmlFor="shippingAddress" className="text-xs font-bold">상세 배송 주소</Label>
               <textarea
                 id="shippingAddress"
                 rows={3}
-                placeholder="우편번호와 함께 도로명 주소 또는 지번 상세 주소를 적어주세요."
-                className="flex w-full rounded-md border border-zinc-200 bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-zinc-500 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:placeholder:text-zinc-400 dark:focus-visible:ring-zinc-300"
+                placeholder="우편번호와 함께 도로명 주소 또는 지번 상세 주소를 입력하세요."
+                className="w-full rounded-md border border-[#1C4025]/20 bg-white p-3 text-xs focus:outline-none focus:ring-1 focus:ring-[#1C4025]"
                 value={shippingAddress}
                 onChange={(e) => setShippingAddress(e.target.value)}
                 required
@@ -393,11 +722,11 @@ export default function ProjectDetailClient({
               />
             </div>
 
-            <DialogFooter className="pt-4 border-t border-zinc-100 dark:border-zinc-800 gap-2">
-              <Button type="button" variant="ghost" onClick={() => setModalOpen(false)} disabled={loading}>
+            <DialogFooter className="pt-4 border-t border-[#1C4025]/10 gap-2">
+              <Button type="button" variant="ghost" onClick={() => setModalOpen(false)} disabled={loading} className="text-xs">
                 취소
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading} className="bg-[#1C4025] text-[#d6f9b4] hover:bg-[#1C4025]/90 text-xs font-bold">
                 {loading ? '예약결제 처리 중...' : '가상 예약결제 완료'}
               </Button>
             </DialogFooter>

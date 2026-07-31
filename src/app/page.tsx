@@ -1,43 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
-import Footer from '@/components/Footer'
-
-// 가상(Mock) 프로젝트 데이터 정의
-const mockProjects = [
-  {
-    id: "mock-1",
-    title: "서점원들의 밤",
-    description: "밤이 깊어 갈수록 빛나는 동네 책방들의 숨은 이야기와 따뜻한 일상을\n위로와 온기의 말로 서점 직원들이 담아낸 기록",
-    goal_amount: 3000000,
-    current_amount: 4200000,
-    deadline: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString(),
-    cover_image_url: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)", 
-    User: { name: "민음책방 편집부" },
-    category: "에세이"
-  },
-  {
-    id: "mock-2",
-    title: "한글 타이포그래피의 유산",
-    description: "납활자 인쇄 시절부터 현대 디지털 폰트 디자인까지,\n한글 자형의 아름다움과 타이포그래피 유산을 정리한 전문 예술 도서",
-    goal_amount: 5000000,
-    current_amount: 1500000,
-    deadline: new Date(Date.now() + 19 * 24 * 60 * 60 * 1000).toISOString(),
-    cover_image_url: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-    User: { name: "스튜디오 글자" },
-    category: "예술/디자인"
-  },
-  {
-    id: "mock-3",
-    title: "보내지 못한 다섯 통의 편지",
-    description: "독립출판상 수상 소설가 5인이 각자 그려내는\n사랑에 대한 기억의 조각을 엮은 로맨스 단편 소설집",
-    goal_amount: 4000000,
-    current_amount: 6400000,
-    deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-    cover_image_url: "linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)",
-    User: { name: "출판동인 묶음" },
-    category: "소설"
-  }
-]
+import { sampleProjects } from '@/data/projectsData'
 
 // 남은 일수 계산 헬퍼 함수
 function getDaysRemaining(deadlineStr: string) {
@@ -54,6 +17,7 @@ export default async function Home() {
 
   try {
     const supabase = await createClient()
+
     const { data, error } = await supabase
       .from('Project')
       .select('*, User(name)')
@@ -66,151 +30,95 @@ export default async function Home() {
       dbProjects = data
     }
   } catch (e) {
-    console.error("Database loading failed. Falling back to mock data.", e)
+    console.error("Database loading failed. Falling back to sample data.", e)
     useMock = true
   }
 
-  const displayProjects = useMock ? mockProjects : dbProjects
+  // 실시간 펀딩 진행 중인 프로젝트 (status === 'live') 디데이 임박한 순(deadline 오름차순)으로 정렬
+  const liveSampleProjects = sampleProjects
+    .filter(p => p.status === 'live')
+    .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
+
+  const displayProjects = useMock ? liveSampleProjects : dbProjects.sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-[#1C4025]">
+    <div className="w-full bg-white text-[#1C4025]">
       
-      {/* 1. Hero Section - Apple MacBook Air 스타일의 대담한 1단 타이포그래피 */}
-      <section className="w-full bg-[#edfae0] pt-28 pb-16 text-center">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-6">
-          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight">
-            종이책을 사랑하는 사람들을<br />
-            한데 묶는 공간
-          </h1>
-          <p className="mx-auto max-w-xl text-sm sm:text-base text-[#1C4025]/80 leading-relaxed font-light">
-            MOOKK은 종이의 책에 탄생한<br />
-            오직 종이책만을 위한 크라우드펀딩 출판 플랫폼입니다.
-          </p>
-          <div className="flex justify-center gap-4 pt-4">
-            <Link
-              href="/login"
-              className="rounded-full bg-[#1C4025] px-6 py-3 text-sm font-semibold text-[#d6f9b4] hover:bg-[#1C4025]/90 transition-all shadow-sm"
-            >
-              지금 시작하기
-            </Link>
-            <Link
-              href="/projects/create"
-              className="rounded-full border border-[#1C4025]/20 bg-white/40 px-6 py-3 text-sm font-semibold hover:bg-white/70 transition-all"
-            >
-              내 책 개설하기
-            </Link>
+      {/* 서브 띠 배너 아래 헤더 타이틀 띠 카피 영역 (3/4 크기 축소 + 상하 완전 동등 여백) */}
+      <div className="w-full py-8 sm:py-10 bg-white shrink-0 flex items-center justify-center text-center px-4">
+        <h1 className="text-[21px] sm:text-[28px] font-extrabold tracking-tight text-[#1C4025] leading-none">
+          책으로 묶는 중입니다
+        </h1>
+      </div>
+
+      {/* 메인 실시간 펀딩 진행 프로젝트 타일 그리드 섹션 */}
+      <section className="w-full bg-white pt-2 sm:pt-4 pb-12 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          
+          {/* 실시간 펀딩 진행 프로젝트 전체 2x2 타일 그리드로 나열 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+            {displayProjects.map((project, index) => {
+              const realPercent = project.goal_amount > 0 
+                ? Math.round((project.current_amount / project.goal_amount) * 100)
+                : 0
+              const coverImg = project.cover_image_url || `/images/book-01.png`
+
+              return (
+                <Link 
+                  key={project.id || index}
+                  href={`/projects/${project.id}`}
+                  className="block group"
+                >
+                  <div className="bg-[#F0EEE9] rounded-none pt-[5px] px-[5px] pb-0 flex flex-col justify-between items-center text-center overflow-hidden border border-black/5 shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 min-h-[550px] sm:min-h-[590px] cursor-pointer">
+                    
+                    {/* 1열: 상단 5px 여백 라인 헤더 (왼쪽: D-Day / 오른쪽: 달성률%) */}
+                    <div className="flex items-start justify-between w-full mb-3 text-[#c84b15] font-extrabold text-2xl sm:text-3xl leading-none">
+                      {/* 왼쪽 위 5px 여백 D-Day */}
+                      <span className="tracking-tight">{getDaysRemaining(project.deadline)}</span>
+
+                      {/* 오른쪽 위 5px 여백 달성률% */}
+                      <span className="tracking-tight">{realPercent}%</span>
+                    </div>
+
+                    {/* 2열: 카테고리 오렌지 뱃지 버튼 */}
+                    <div className="mt-1 mb-2">
+                      <span className="inline-block bg-[#c84b15] text-white text-[11px] sm:text-xs font-bold px-3 py-1 rounded-full shadow-xs">
+                        {project.category}
+                      </span>
+                    </div>
+
+                    {/* 3열: 메인 타이틀 (현재 크기의 1.4배 확대) */}
+                    <h3 className="text-[26px] sm:text-[34px] font-extrabold text-[#1C4025] tracking-tight group-hover:text-[#c84b15] transition-colors px-4 line-clamp-1 mb-2">
+                      {project.title}
+                    </h3>
+
+                    {/* 4열: 책 설명 부분 */}
+                    <div className="px-6 mb-4 max-w-lg">
+                      <p className="text-base sm:text-lg font-medium text-[#1C4025] leading-relaxed font-eulyoo whitespace-pre-line">
+                        {project.description}
+                      </p>
+                    </div>
+
+                    {/* 5열: 책 커버 이미지 (그림자 효과 + 영역 박스 하단 선 간격 1px) */}
+                    <div className="w-full flex justify-center items-end mt-auto mb-[1px]">
+                      <div className="relative shadow-[0_15px_30px_rgba(0,0,0,0.25)] transition-transform duration-300 group-hover:scale-[1.03]">
+                        <img 
+                          src={coverImg} 
+                          alt={project.title} 
+                          className="h-[260px] sm:h-[300px] w-auto object-contain block"
+                        />
+                      </div>
+                    </div>
+
+                  </div>
+                </Link>
+              )
+            })}
           </div>
+
         </div>
       </section>
 
-      {/* Hero 영역과 첫 프로젝트 사이 10px 흰색 구분선 */}
-      <div className="w-full h-[10px] bg-white border-none shrink-0" />
-
-      {/* 2. 프로젝트 1단 배너 목록 (상단 텍스트 중앙 정렬 + 하단 투명 도서 실물 이미지 + '더 알아보기') */}
-      {displayProjects.map((project, index) => {
-        const percent = Math.min(100, Math.round((project.current_amount / project.goal_amount) * 100))
-        const realPercent = Math.round((project.current_amount / project.goal_amount) * 100)
-
-        // 프로젝트 타이틀 동적 적용
-        const displayTitle = index === 0 
-          ? "서점원들의 밤" 
-          : index === 1
-          ? "한글 타이포그래피의 유산"
-          : "보내지 못한 다섯 통의 편지"
-
-        // 프로젝트 설명 2열 줄바꿈 노드 동적 구성
-        const displayDescriptionNode = index === 0 ? (
-          <>
-            밤이 깊어 갈수록 빛나는 동네 책방들의 숨은 이야기와 따뜻한 일상을<br />
-            위로와 온기의 말로 서점 직원들이 담아낸 기록
-          </>
-        ) : index === 1 ? (
-          <>
-            납활자 인쇄 시절부터 현대 디지털 폰트 디자인까지,<br />
-            한글 자형의 아름다움과 타이포그래피 유산을 정리한 전문 예술 도서
-          </>
-        ) : (
-          <>
-            독립출판상 수상 소설가 5인이 각자 그려내는<br />
-            사랑에 대한 기억의 조각을 엮은 로맨스 단편 소설집
-          </>
-        )
-
-        return (
-          <div key={project.id} className="w-full flex flex-col">
-            <section className="w-full bg-[#F0EEE9] pt-20 pb-16 text-center flex flex-col items-center">
-              
-              {/* 상단 텍스트 중앙 정렬 영역 */}
-              <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 space-y-6 flex flex-col items-center">
-                
-                {/* 카테고리, 저자명, D-Day 메타 정보 */}
-                <div className="flex items-center gap-2 text-xs font-bold text-[#1C4025]/50">
-                  {project.category && (
-                    <span className="rounded-full bg-[#c84b15] px-2.5 py-0.5 uppercase tracking-wider text-white text-[10px] font-bold border-none shrink-0">
-                      {project.category}
-                    </span>
-                  )}
-                  <span>by {project.User?.name || '창작 작가'}</span>
-                  <span>•</span>
-                  <span className="text-[#1C4025]/80">{getDaysRemaining(project.deadline)}</span>
-                </div>
-
-                {/* 대형 타이틀 */}
-                <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight max-w-2xl text-[#1C4025]">
-                  {displayTitle}
-                </h2>
-
-                {/* 요약 소개글 (2열 줄바꿈 구성) */}
-                <p className="mx-auto max-w-xl text-sm sm:text-base text-[#1C4025]/70 leading-relaxed font-light">
-                  {displayDescriptionNode}
-                </p>
-
-                {/* 펀딩 프로그레스 바 (중앙 매핑) */}
-                <div className="w-full max-w-md space-y-2 pt-2">
-                  <div className="flex justify-between items-baseline text-xs font-bold text-[#1C4025]/60">
-                    <span className="text-lg font-black text-[#1C4025]">{realPercent}% 달성</span>
-                    <span>{project.current_amount.toLocaleString()}원 모금</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-[#1C4025]/10 rounded-full overflow-hidden">
-                    <div
-                      style={{ width: `${percent}%` }}
-                      className="h-full bg-[#1C4025] rounded-full transition-all duration-700"
-                    />
-                  </div>
-                </div>
-
-                {/* '더 알아보기' 버튼 (가운데 정렬) */}
-                <div className="pt-2">
-                  <Link href={`/projects/${project.id}`}>
-                    <button className="rounded-full bg-[#1C4025] text-[#F4F3EF] hover:bg-[#1C4025]/90 px-8 py-3 text-xs font-bold transition-all uppercase tracking-widest shadow-sm">
-                      더 알아보기
-                    </button>
-                  </Link>
-                </div>
-              </div>
-
-              {/* 하단 3D 책 실물 이미지 전시 영역 (Apple 스타일 50% 강화된 3D 부유 그림자 적용) */}
-              <div className="w-full max-w-5xl px-4 sm:px-6 lg:px-8 mt-12 flex justify-center">
-                <div className="relative w-full max-w-lg aspect-[16/10] flex items-center justify-center select-none py-4 transition-transform duration-500 hover:scale-[1.02]">
-                  <img 
-                    src={`/images/book-0${index + 1}.png`} 
-                    alt={displayTitle}
-                    className="w-full max-h-[360px] object-contain filter drop-shadow-[0_25px_30px_rgba(0,0,0,0.40)] drop-shadow-[0_12px_15px_rgba(0,0,0,0.22)]"
-                  />
-                </div>
-              </div>
-
-            </section>
-
-            {/* 블록 간 10px 흰색 구분선 */}
-            <div className="w-full h-[10px] bg-white border-none shrink-0" />
-          </div>
-        )
-      })}
-      
-      {/* 푸터 영역 */}
-      <Footer />
-      
     </div>
   )
 }

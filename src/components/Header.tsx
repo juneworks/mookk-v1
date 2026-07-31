@@ -21,6 +21,7 @@ export default function Header({ initialUser }: HeaderProps) {
   const router = useRouter()
   const supabase = createClient()
   const [user, setUser] = useState<UserProfile | null>(initialUser)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     setUser(initialUser)
@@ -30,13 +31,12 @@ export default function Header({ initialUser }: HeaderProps) {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
-        // 로그인 시 세션 데이터를 바탕으로 public.User 정보 다시 조회
         const { data: profile } = await supabase
           .from('User')
           .select('*')
           .eq('id', session.user.id)
           .single()
-        
+
         if (profile) {
           setUser(profile as UserProfile)
         }
@@ -51,18 +51,18 @@ export default function Header({ initialUser }: HeaderProps) {
   }, [supabase])
 
   const handleSignOut = async () => {
-    // 1. Supabase Auth 로그아웃 실행 (클라이언트 세션 제거)
     await supabase.auth.signOut()
-
-    // 2. Next.js 서버 사이드 쿠키 세션 제거를 위해 signout API 호출
     await fetch('/api/auth/signout', { method: 'POST' })
-
-    // 3. 홈으로 이동 및 세션 갱신을 위해 refresh 실행
     router.push('/')
     router.refresh()
   }
 
-  // 역할(Role) 한국어 매핑
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!searchQuery.trim()) return
+    router.push(`/projects?search=${encodeURIComponent(searchQuery.trim())}`)
+  }
+
   const getRoleLabel = (role: 'creator' | 'backer' | 'admin') => {
     switch (role) {
       case 'creator':
@@ -76,86 +76,101 @@ export default function Header({ initialUser }: HeaderProps) {
     }
   }
 
-  // 역할별 마이페이지 또는 대시보드 이동 경로 설정
-  const getMyPageLink = () => {
-    return '/mypage'
-  }
-
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/85 backdrop-blur-md dark:bg-[#1c2b20]/95">
+    <header className="sticky top-0 z-50 w-full bg-white border-b border-[#1C4025]/10">
+      {/* 1. 상단 GNB 메인 바 */}
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* 로고 영역 */}
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2">
-            <span 
-              className="text-2xl font-black tracking-wider text-[#1C4025] dark:text-[#edfae0]"
-              style={{ WebkitTextStroke: '0.7px currentColor' }}
-            >
+
+        {/* 좌측: 로고 + 2가지 전체 메뉴('프로젝트', '알립니다') + 캡슐 검색창 */}
+        <div className="flex items-center gap-6 sm:gap-8 flex-1">
+          {/* 로고 & beta 뱃지 */}
+          <Link href="/" className="flex items-center gap-2 shrink-0">
+            <span className="text-[28px] sm:text-[30px] font-extrabold tracking-normal text-[#1C4025]">
               MOOKK
             </span>
-            <span className="rounded-full bg-[#1C4025]/10 px-2 py-0.5 text-[9px] font-bold tracking-wider text-[#1C4025] dark:bg-white/10 dark:text-[#edfae0]">
+            <span className="rounded-full bg-[#1C4025]/10 px-2 py-0.5 text-[9px] font-bold tracking-wider text-[#1C4025]">
               beta
             </span>
           </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-[#1C4025]/70 dark:text-[#edfae0]/70">
-            <Link href="/" className="hover:text-[#1C4025] dark:hover:text-[#edfae0] transition-colors font-bold">
+
+          {/* GNB 2가지 전체 메뉴 ('프로젝트', '알립니다') */}
+          <nav className="hidden sm:flex items-center gap-7 text-sm font-bold text-[#1C4025] shrink-0">
+            {/* 1. 프로젝트 */}
+            <Link href="/projects" className="hover:text-[#c84b15] transition-colors py-2">
               프로젝트
             </Link>
-            <Link href="#" className="hover:text-[#1C4025] dark:hover:text-[#edfae0] transition-colors font-bold">
-              커뮤니티
+
+            {/* 2. 알립니다 */}
+            <Link href="/notice" className="hover:text-[#c84b15] transition-colors py-2">
+              알립니다
             </Link>
+
             {user?.role === 'creator' && (
-              <Link href="/projects/create" className="hover:text-[#1C4025] dark:hover:text-[#edfae0] transition-colors">
-                프로젝트 등록
+              <Link href="/projects/create" className="hover:text-[#c84b15] transition-colors py-2 text-xs font-semibold text-[#c84b15]">
+                + 프로젝트 등록
               </Link>
             )}
           </nav>
+
+          {/* 타원 캡슐형 검색창 (Search Input Bar) */}
+          <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-xs sm:max-w-sm ml-2">
+            <input
+              type="text"
+              placeholder="프로젝트 검색..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-9 pl-4 pr-10 rounded-full border border-[#1C4025] text-xs font-medium text-[#1C4025] placeholder:text-[#1C4025]/50 focus:outline-none focus:ring-1 focus:ring-[#1C4025] bg-white transition-all"
+            />
+            <button
+              type="submit"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#1C4025] hover:opacity-75 transition-opacity"
+              aria-label="검색"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
+          </form>
         </div>
 
-        {/* 우측 로그인/유저 정보 영역 */}
-        <div className="flex items-center gap-4">
+        {/* 우측 로그인/유저 정보 */}
+        <div className="flex items-center gap-4 ml-4 shrink-0">
           {user ? (
-            <div className="flex items-center gap-4">
-              {/* 유저명과 역할을 1열로 배치하고 짙은 배경의 흰색 글자 박스 뱃지 처리 */}
+            <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 hidden sm:flex">
-                <span className="text-sm font-semibold text-[#1C4025] dark:text-[#edfae0]">
+                <span className="text-xs font-bold text-[#1C4025]">
                   {user.name}
                 </span>
-                <span className={`rounded text-white px-2 py-0.5 text-[10px] font-bold tracking-wide border-none ${
-                  user.role === 'creator' ? 'bg-[#c84b15]' : 'bg-[#1C4025]'
-                }`}>
+                <span className={`rounded-full text-white px-2 py-0.5 text-[9px] font-bold ${user.role === 'creator' ? 'bg-[#c84b15]' : 'bg-[#1C4025]'
+                  }`}>
                   {getRoleLabel(user.role)}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 sm:hidden">
-                <span className="text-xs font-semibold text-[#1C4025] dark:text-[#edfae0]">
-                  {user.name}
-                </span>
-                <span className={`rounded text-white px-1.5 py-0.5 text-[9px] font-bold border-none ${
-                  user.role === 'creator' ? 'bg-[#c84b15]' : 'bg-[#1C4025]'
-                }`}>
-                  {getRoleLabel(user.role)}
-                </span>
-              </div>
-              <Link href={getMyPageLink()}>
-                <Button variant="outline" size="sm" className="border-[#1C4025]/20 text-[#1C4025] hover:bg-[#1C4025]/5 dark:border-white/20 dark:text-[#edfae0] dark:hover:bg-white/5">
+              <Link href="/mypage">
+                <Button variant="outline" size="sm" className="rounded-full border-[#1C4025]/20 text-[#1C4025] hover:bg-[#1C4025]/5 text-xs font-bold">
                   마이페이지
                 </Button>
               </Link>
-              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-[#1C4025]/80 hover:bg-[#1C4025]/5 dark:text-[#edfae0]/80 dark:hover:bg-white/5">
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-[#1C4025]/80 hover:bg-[#1C4025]/5 text-xs">
                 로그아웃
               </Button>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
-              <Link href="/login">
-                <Button size="sm" className="bg-[#1C4025] text-[#d6f9b4] hover:bg-[#1C4025]/90 dark:bg-[#edfae0] dark:text-[#142017] dark:hover:bg-[#edfae0]/90 font-bold">
-                  로그인
-                </Button>
-              </Link>
-            </div>
+            <Link href="/login">
+              <button className="rounded-full bg-[#1C4025] text-white hover:bg-[#1C4025]/90 px-6 py-2 text-xs font-bold transition-all shadow-xs">
+                로그인
+              </button>
+            </Link>
           )}
         </div>
+      </div>
+
+      {/* 2. 헤더 아래 딥 그린 서브 띠 배너 */}
+      <div className="w-full bg-[#1C4025] py-1.5 px-4 text-center">
+        <Link href="/about" className="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm font-semibold text-white hover:text-[#d6f9b4] transition-colors">
+          <span>MOOKK은 오직 종이책만을 위한 크라우드펀딩 출판 서비스입니다</span>
+          <span className="text-base font-normal">➔</span>
+        </Link>
       </div>
     </header>
   )

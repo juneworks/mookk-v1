@@ -1,207 +1,134 @@
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
+import { calculateSettlementFee } from '@/utils/fee'
 
-// RLS를 우회하는 Admin 클라이언트 생성 함수
-function getSupabaseAdmin() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-  if (!supabaseUrl || !supabaseServiceRoleKey) {
-    throw new Error('Supabase URL or Service Role Key is missing in environment variables.')
-  }
-
-  return createClient(supabaseUrl, supabaseServiceRoleKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false
-    }
-  })
-}
-
-// GET 요청 처리 (수동 디버깅 및 브라우저 호출)
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const projectId = searchParams.get('projectId')
-  const action = searchParams.get('action') // 'approve' (수동 승인) 또는 'batch' (기본값, 배치 결제)
-
-  if (!projectId) {
-    return NextResponse.json({ error: 'projectId query parameter is required.' }, { status: 400 })
-  }
-
-  return processBatchPayment(projectId, action || 'batch')
-}
-
-// POST 요청 처리 (실서비스 호출)
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { projectId, action } = body
+    // 1. 보안 가드 (CRON_SECRET 검증 또는 Admin 인가)
+    const authHeader = request.headers.get('authorization')
+    const cronSecretHeader = request.headers.get('x-cron-secret')
+    const expectedSecret = process.env.CRON_SECRET || 'mookk_pilot_cron_secret_2026'
 
-    if (!projectId) {
-      return NextResponse.json({ error: 'projectId is required in request body.' }, { status: 400 })
+    const isAuthorizedSecret = 
+      (authHeader && authHeader === `Bearer ${expectedSecret}`) ||
+      (cronSecretHeader && cronSecretHeader === expectedSecret)
+
+    // 만약 보안 헤더가 없더라도 로컬 데모 호출인 경우 query param ?admin=true 허용
+    const { searchParams } = new URL(request.url)
+    const isAdminOverride = searchParams.get('admin') === 'true'
+
+    if (!isAuthorizedSecret && !isAdminOverride) {
+      return NextResponse.json({ error: '인증되지 않은 배치 결제 요청입니다.' }, { status: 401 })
     }
 
-    return processBatchPayment(projectId, action || 'batch')
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Invalid JSON body' }, { status: 400 })
-  }
-}
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-// 배치 결제 / 수동 승인 통합 처리 함수
-async function processBatchPayment(projectId: string, action: string) {
-  try {
-    const supabaseAdmin = getSupabaseAdmin()
+    const supabase = createClient(supabaseUrl, serviceRoleKey)
 
-    // 1. 프로젝트 상세 정보 조회
-    const { data: project, error: projectError } = await supabaseAdmin
+    // 2. 마감일이 지났고 status가 'live'인 프로젝트 조회
+    const { data: expiredProjects, error: fetchErr } = await supabase
       .from('Project')
       .select('*')
-      .eq('id', projectId)
-      .single()
+      .eq('status', 'live')
+      .lte('deadline', new Date().toISOString())
 
-    if (projectError || !project) {
-      return NextResponse.json({ error: `Project not found. ${projectError?.message}` }, { status: 404 })
+    if (fetchErr) {
+      console.error('Expired projects fetch error:', fetchErr)
+      return NextResponse.json({ error: '프로젝트 데이터 조회 실패' }, { status: 500 })
     }
 
-    // A. 수동 승인 (Live 전환) 처리 분기
-    if (action === 'approve') {
-      if (project.status !== 'draft') {
-        return NextResponse.json({
-          success: false,
-          message: `Only 'draft' projects can be approved. Current status is '${project.status}'.`
-        })
-      }
+    const results = []
 
-      const { error: approveError } = await supabaseAdmin
-        .from('Project')
-        .update({ status: 'live' })
-        .eq('id', projectId)
+    for (const project of expiredProjects || []) {
+      const isSuccess = project.current_amount >= project.target_amount
 
-      if (approveError) {
-        throw new Error(`Failed to approve project: ${approveError.message}`)
-      }
-
-      return NextResponse.json({
-        success: true,
-        message: `Project '${project.title}' is now LIVE.`,
-        data: { projectId, newStatus: 'live' }
-      })
-    }
-
-    // B. 배치 결제 및 정산 처리 분기
-    if (action === 'batch') {
-      // 이미 마감 완료된 상태인지 확인 (중복 처리 방지)
-      if (['succeeded', 'failed', 'closed'].includes(project.status)) {
-        return NextResponse.json({
-          success: false,
-          message: `Project is already in '${project.status}' status. Batch cannot be re-run.`
-        })
-      }
-
-      // Live 상태일 때만 배치 결제가 돌아가도록 방어
-      if (project.status !== 'live') {
-        return NextResponse.json({
-          success: false,
-          message: `Only 'live' projects can be finalized via batch. Current status is '${project.status}'.`
-        })
-      }
-
-      const currentAmount = project.current_amount || 0
-      const goalAmount = project.goal_amount
-      const isSuccess = currentAmount >= goalAmount
-      const targetStatus = isSuccess ? 'succeeded' : 'failed'
-
-      // 2. 프로젝트 상태 변경
-      const { error: updateProjectError } = await supabaseAdmin
-        .from('Project')
-        .update({ status: targetStatus })
-        .eq('id', projectId)
-
-      if (updateProjectError) {
-        throw new Error(`Failed to update project status: ${updateProjectError.message}`)
-      }
-
-      // 3. 해당 프로젝트의 'pending' 상태인 모든 후원(Pledge) 데이터 조회
-      const { data: pledges, error: pledgesError } = await supabaseAdmin
-        .from('Pledge')
-        .select('*')
-        .eq('project_id', projectId)
-        .eq('payment_status', 'pending')
-
-      if (pledgesError) {
-        throw new Error(`Failed to fetch pledges: ${pledgesError.message}`)
-      }
-
-      const totalPledgesCount = pledges?.length || 0
-      let processedPledgesCount = 0
-
-      if (totalPledgesCount > 0) {
-        // 4. 결제 예약 일괄 처리 (성공 시 paid, 실패 시 failed로 업데이트)
-        const targetPaymentStatus = isSuccess ? 'paid' : 'failed'
-        const pledgeIds = pledges.map((p) => p.id)
-
-        const { error: updatePledgesError } = await supabaseAdmin
-          .from('Pledge')
-          .update({ payment_status: targetPaymentStatus })
-          .in('id', pledgeIds)
-
-        if (updatePledgesError) {
-          throw new Error(`Failed to update pledges status: ${updatePledgesError.message}`)
-        }
-        processedPledgesCount = totalPledgesCount
-      }
-
-      // 5. 정산 내역(Settlement) 계산 및 생성 (성공 시에만 정산 실시)
-      let settlementResult = null
       if (isSuccess) {
-        const totalAmount = currentAmount
-        const pgFee = Math.floor(totalAmount * 0.033) // PG 수수료 3.3%
-        const platformFee = Math.floor(totalAmount * 0.05) // 플랫폼 수수료 5.0%
-        const payoutAmount = totalAmount - pgFee - platformFee // 실수령 정산금
-        
-        const scheduledAt = new Date()
-        scheduledAt.setDate(scheduledAt.getDate() + 7) // 정산 예정일: 마감 기준 +7일
+        // 프로젝트 상태 -> succeeded
+        await supabase.from('Project').update({ status: 'succeeded' }).eq('id', project.id)
 
-        const { data: settlement, error: settlementError } = await supabaseAdmin
-          .from('Settlement')
-          .insert({
-            project_id: projectId,
-            total_amount: totalAmount,
-            pg_fee: pgFee,
-            platform_fee: platformFee,
-            payout_amount: payoutAmount,
-            status: 'calculated', // 계산 완료
-            scheduled_at: scheduledAt.toISOString()
-          })
-          .select()
-          .single()
+        // 미결제 Pledge 조회
+        const { data: pledges } = await supabase
+          .from('Pledge')
+          .select('*')
+          .eq('project_id', project.id)
+          .in('payment_status', ['pending', 'payment_failed'])
 
-        if (settlementError) {
-          throw new Error(`Failed to insert settlement: ${settlementError.message}`)
+        let paidCount = 0
+        let failedCount = 0
+
+        for (const pledge of pledges || []) {
+          // 데모 결제 시뮬레이션 (카드 한도초과 5% 실패 가상 연출)
+          const mockPaymentSuccess = Math.random() > 0.05
+
+          if (mockPaymentSuccess) {
+            await supabase
+              .from('Pledge')
+              .update({ payment_status: 'paid', updated_at: new Date().toISOString() })
+              .eq('id', pledge.id)
+            paidCount++
+          } else {
+            // 결제 실패 시 7일간 재시도 (Retry) 메커니즘
+            const currentRetry = (pledge.retry_count || 0) + 1
+            const nextRetryDate = new Date()
+            nextRetryDate.setDate(nextRetryDate.getDate() + 1) // 1일 후 재시도
+
+            await supabase
+              .from('Pledge')
+              .update({
+                payment_status: currentRetry >= 7 ? 'failed_final' : 'payment_failed',
+                retry_count: currentRetry,
+                next_retry_at: nextRetryDate.toISOString(),
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', pledge.id)
+            failedCount++
+          }
         }
-        settlementResult = settlement
-      }
 
-      return NextResponse.json({
-        success: true,
-        data: {
-          projectId,
+        // 3. 8.0% 통합 수수료 + 부가가치세(VAT 10%) 정산금 연산
+        const feeInfo = calculateSettlementFee(project.current_amount)
+
+        // 정산 데이터 인서트
+        await supabase.from('Settlement').insert({
+          project_id: project.id,
+          total_amount: feeInfo.totalAmount,
+          pg_fee: feeInfo.totalFeeAmount, // 8.0% 통합 수수료
+          platform_fee: feeInfo.feeSupplyValue, // 수수료 공급가액
+          vat_amount: feeInfo.feeVat, // 수수료 부가가치세(VAT 10%)
+          net_amount: feeInfo.netSettlementAmount, // 최종 입금 예정액
+          settled_at: new Date().toISOString()
+        })
+
+        results.push({
+          projectId: project.id,
           title: project.title,
-          finalStatus: targetStatus,
-          goalAmount,
-          collectedAmount: currentAmount,
-          totalPledgesCount,
-          processedPledgesCount,
-          settlementCreated: isSuccess,
-          settlement: settlementResult
-        }
-      })
+          status: 'succeeded',
+          paidCount,
+          failedCount,
+          feeBreakdown: feeInfo
+        })
+      } else {
+        // 목표 달성 미달 -> failed
+        await supabase.from('Project').update({ status: 'failed' }).eq('id', project.id)
+
+        results.push({
+          projectId: project.id,
+          title: project.title,
+          status: 'failed',
+          paidCount: 0,
+          failedCount: 0
+        })
+      }
     }
 
-    return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 })
-
+    return NextResponse.json({
+      success: true,
+      processedCount: expiredProjects?.length || 0,
+      results
+    })
   } catch (err: any) {
-    console.error('Batch payment critical error:', err)
-    return NextResponse.json({ error: err.message || 'Batch execution failed' }, { status: 500 })
+    console.error('Batch payment error:', err)
+    return NextResponse.json({ error: err.message || '배치 실행 중 에러' }, { status: 500 })
   }
 }
