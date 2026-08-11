@@ -31,6 +31,7 @@ export interface ProjectData {
   backers_count: number
   deadline: string
   cover_image_url: string
+  hero_bg_image_url?: string
   cover_width?: number
   cover_height?: number
   status: 'live' | 'upcoming' | 'succeeded' | 'failed'
@@ -40,12 +41,12 @@ export interface ProjectData {
 }
 
 export const sampleProjects: ProjectData[] = [
-  // 1. [실시간 펀딩 1 - D-5 가장 임박] 시인들의 러브레터 (문학)
+  // 1. [실시간 펀딩 1 - D-20] 시인들의 러브레터 (문학)
   {
     id: 'mookk-real-2',
     title: '시인들의 러브레터',
     subtitle: '시대를 뛰어넘어 이어지는 시인 12인의 헌정 서간집',
-    description: '한국 현대시 12인이 연인과 주고받은\n친필 편지의 내용을 양장본 종이책으로 복원한 헌정 서간집',
+    description: '한국 근대시 작가 12명 시인의\n연인과 주고받은 친필 편지를\n양장본으로 복원한 헌정 서간집',
     detail_story: `## 📖 책 소개
 《시인들의 러브레터》는 한국 근현대문학을 대표하는 시인 12인이 아내, 연인, 친구에게 보낸 친필 편지와 시적 감성이 물씬 풍기는 서간들을 한데 엮은 프리미엄 종이책 양장본입니다.
 
@@ -75,8 +76,9 @@ export const sampleProjects: ProjectData[] = [
     goal_amount: 3000000,
     current_amount: 30120000,
     backers_count: 1506,
-    deadline: '2026-08-05T23:59:59Z', // D-5 (가장 임박)
+    deadline: '2026-08-31T23:59:59Z', // D-20
     cover_image_url: '/images/books/poet_loveletter.png',
+    hero_bg_image_url: '/images/hero/hero-loveletter.jpg',
     status: 'live',
     creator_name: '김시인',
     category: '문학',
@@ -86,12 +88,12 @@ export const sampleProjects: ProjectData[] = [
     ]
   },
 
-  // 2. [실시간 펀딩 2 - D-8 두번째 임박] 바다 마을 소설 (문학)
+  // 2. [실시간 펀딩 2 - D-25] 바다 마을 소설 (문학)
   {
     id: 'mookk-real-3',
     title: '바다 마을 소설',
     subtitle: '파도 소리와 함께 흘러가는 조용한 바닷가 마을 사람들의 서사',
-    description: '조용한 어느 시골 바다 마을에서 펼쳐지는\n충격적 미스테리 사건을 엮은 김파도 작가의 문제작',
+    description: '조용한 어느 시골 바다 마을에서 펼쳐지는\n충격적 미스테리 사건을 엮은\n김파도 작가의 문제작',
     detail_story: `## 🌊 책 소개
 《바다 마을 소설》은 동해안의 작은 포구 마을 '청호리'를 배경으로, 타지에서의 삶을 뒤로하고 고향으로 돌아온 사람들과 평생 바다를 지켜온 이들이 나누는 다정한 연결에 관한 이야기입니다.
 
@@ -116,8 +118,9 @@ export const sampleProjects: ProjectData[] = [
     goal_amount: 3000000,
     current_amount: 11340000,
     backers_count: 667,
-    deadline: '2026-08-08T23:59:59Z', // D-8
+    deadline: '2026-09-05T23:59:59Z', // D-25
     cover_image_url: '/images/books/sea_village.png',
+    hero_bg_image_url: '/images/hero/hero-sea.jpg',
     status: 'live',
     creator_name: '김파도',
     category: '문학',
@@ -127,7 +130,7 @@ export const sampleProjects: ProjectData[] = [
     ]
   },
 
-  // 3. [실시간 펀딩 3 - D-12] 계절을 건너는 온도 (에세이 - 오리지널 메인)
+  // 3. [실시간 펀딩 3 - D-28] 계절을 건너는 온도 (에세이)
   {
     id: 'mookk-real-1',
     title: '계절을 건너는 온도',
@@ -157,8 +160,9 @@ export const sampleProjects: ProjectData[] = [
     goal_amount: 3000000,
     current_amount: 7260000,
     backers_count: 403,
-    deadline: '2026-08-12T23:59:59Z', // D-12
-    cover_image_url: '/images/books/season_cover.webp',
+    deadline: '2026-09-08T23:59:59Z', // D-28
+    cover_image_url: '/images/books/season_cover.jpg',
+    hero_bg_image_url: '/images/hero/hero-season.jpg',
     status: 'live',
     creator_name: '문지은',
     category: '에세이',
@@ -168,7 +172,7 @@ export const sampleProjects: ProjectData[] = [
     ]
   },
 
-  // 4. [실시간 펀딩 4 - D-18] 계약서에 도장을 찍고 (에세이)
+  // 4. [실시간 펀딩 4 - D-30] 계약서에 도장을 찍고 (에세이)
   {
     id: 'mookk-real-4',
     title: '계약서에 도장을 찍고',
@@ -196,8 +200,9 @@ export const sampleProjects: ProjectData[] = [
     goal_amount: 3000000,
     current_amount: 3180000,
     backers_count: 198,
-    deadline: '2026-08-18T23:59:59Z', // D-18
+    deadline: '2026-09-10T23:59:59Z', // D-30
     cover_image_url: '/images/books/stamp_contract.png',
+    hero_bg_image_url: '/images/hero/hero-contract.jpg',
     status: 'live',
     creator_name: '김기현',
     category: '에세이',
@@ -358,82 +363,6 @@ export const sampleProjects: ProjectData[] = [
     rewards: [
       { id: 'r8-1', title: '화보집 1권', price: 28000, description: '북유럽 인테리어 가이드 화보집 1권 + 인테리어 컬러 칩 미니북' }
     ]
-  },
-
-  // 9. [펀딩 종료] 이혼 후 결혼 (문학)
-  {
-    id: 'mookk-sample-6',
-    title: '이혼 후 결혼',
-    subtitle: '서로를 다시, 그리고 또 다시 선택한 유준 작가의 이야기',
-    description: '이혼과 결혼을 반복한 두 주인공의 격정 사랑 소설,\n유준 작가의 세 번째 기대작',
-    detail_story: `## 💍 책 소개
-《이혼 후 결혼》은 수많은 아픔과 방황 끝에 서로의 소중함을 다시 깨닫고 또 한 번의 선택을 내린 남녀의 깊은 서사를 다룬 감동 장편소설입니다.`,
-    features: [
-      '유준 작가의 서재 한복스냅 사진 표지 적용',
-      '펀딩 목표 320% 달성 성공 마감 도서',
-      '고급 미색 양장 소장본'
-    ],
-    spec: {
-      subtitle: '서로를 다시, 그리고 또 다시 선택한 유준 작가의 이야기',
-      size: '130 x 195 mm',
-      paper_inner: '모조지 90g',
-      paper_cover: '아르떼 230g',
-      pages: '310쪽',
-      binding: '사반양장 제본',
-      isbn: '979-11-984321-6-9'
-    },
-    author_intro: '유준 작가. 인간관계의 서사와 삶의 회복력에 대한 깊이 있는 통찰을 글로 녹여내는 소설가.',
-    publisher_intro: '진솔한 인간의 삶과 사랑에 대한 이야기를 전합니다.',
-    publisher_name: '다시 선택한 서가',
-    goal_amount: 3000000,
-    current_amount: 9600000,
-    backers_count: 320,
-    deadline: '2026-06-30T23:59:59Z',
-    cover_image_url: '/images/books/marriage_after_divorce.jpg',
-    status: 'succeeded',
-    creator_name: '유준',
-    category: '문학',
-    rewards: [
-      { id: 'r6-1', title: '펀딩 마감 성공 리워드', price: 19000, description: '도서 1권 + 양장 서명본' }
-    ]
-  },
-
-  // 10. [펀딩 종료] 자전거로 달려간 420km (문학)
-  {
-    id: 'mookk-sample-9',
-    title: '자전거로 달려간 420km',
-    subtitle: '이 여정의 끝에 너를 만날 수 있다면 - 이륜차 저자의 420km 자전거 기행',
-    description: '자전거만으로 홀로 전국을 다니며 쓴 단상을 모은\n이륜차 저자의 치유 힐링 에세이',
-    detail_story: `## 🚴‍♂️ 책 소개
-《자전거로 달려간 420km》는 국토종주 자전거길 420km를 페달로 저어가며 만난 사람들과 길 위의 풍경, 그리고 자신의 한계를 넘어서던 순간을 그리는 이륜차 저자의 감동 소설입니다.`,
-    features: [
-      '청량한 녹음 들판 자전거 일러스트 표지',
-      '자전거 종주 지도 브로마이드 포함',
-      '펀딩 성공 마감 도서'
-    ],
-    spec: {
-      subtitle: '이 여정의 끝에 너를 만날 수 있다면',
-      size: '130 x 190 mm',
-      paper_inner: '모조지 100g',
-      paper_cover: '스노우 250g',
-      pages: '230쪽',
-      binding: '무선 제본',
-      isbn: '979-11-984321-9-9'
-    },
-    author_intro: '이륜차 작가. 자전거 여행가이자 감성 기행 문학 라이터.',
-    publisher_intro: '길 위의 숨결을 책으로 담아냅니다.',
-    publisher_name: '바람길 출판',
-    goal_amount: 2000000,
-    current_amount: 4100000,
-    backers_count: 205,
-    deadline: '2026-05-31T23:59:59Z',
-    cover_image_url: '/images/books/bicycle_420km.png',
-    status: 'succeeded',
-    creator_name: '이륜차',
-    category: '문학',
-    rewards: [
-      { id: 'r9-1', title: '성공 마감 도서', price: 17000, description: '도서 1권 + 종주 지도' }
-    ]
   }
 ]
 
@@ -459,7 +388,7 @@ export const mockPledges = [
     Project: {
       id: 'mookk-real-1',
       title: '계절을 건너는 온도',
-      cover_image_url: '/images/books/season_cover.webp',
+      cover_image_url: '/images/books/season_cover.jpg',
       deadline: '2026-08-12T23:59:59Z',
       status: 'live'
     }

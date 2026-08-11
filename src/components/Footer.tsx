@@ -7,8 +7,21 @@ export default function Footer() {
   const [isBusinessInfoOpen, setIsBusinessInfoOpen] = useState(false)
 
   return (
-    <footer className="w-full bg-[#1C4025] py-16 mt-auto text-xs text-white/70 dark:bg-zinc-950">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-10">
+    <div className="w-full mt-auto">
+      {/* 1. 푸터 바로 위 오렌지(#c84b15) 띠 배너 */}
+      <div className="w-full bg-[#c84b15] py-2.5 px-4 text-center">
+        <Link 
+          href="/about" 
+          className="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold text-white hover:opacity-90 transition-opacity"
+        >
+          <span>현재 MOOKK 서비스는 베타 버전으로 운영 중입니다</span>
+          <span className="text-base font-normal">➔</span>
+        </Link>
+      </div>
+
+      {/* 2. 푸터 메인 섹션 */}
+      <footer className="w-full bg-[#1C4025] py-16 text-xs text-white/70 dark:bg-zinc-950">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-10">
         
         {/* 푸터 메뉴 섹션 ('프로젝트' 및 '알립니다' 5가지 하위 메뉴) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 max-w-3xl">
@@ -105,5 +118,6 @@ export default function Footer() {
 
       </div>
     </footer>
-  )
+  </div>
+)
 }

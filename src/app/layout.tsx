@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     siteName: 'MOOKK',
     images: [
       {
-        url: '/images/books/season_cover.webp',
+        url: '/images/books/season_cover.jpg',
         width: 1200,
         height: 630,
         alt: 'MOOKK 종이책 크라우드펀딩 메인',
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'MOOKK - 오직 종이책만을 위한 크라우드펀딩 출판 플랫폼',
     description: '독립출판과 종이책 전용 크라우드펀딩 프로젝트를 MOOKK에서 후원하세요.',
-    images: ['/images/books/season_cover.webp'],
+    images: ['/images/books/season_cover.jpg'],
   },
 }
 

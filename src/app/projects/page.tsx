@@ -1,10 +1,8 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useRef, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
 import { sampleProjects } from '@/data/projectsData'
 
 function getDaysRemaining(deadlineStr: string, status: string) {
@@ -17,18 +15,35 @@ function getDaysRemaining(deadlineStr: string, status: string) {
   return diffDays > 0 ? `D-${diffDays}` : '펀딩종료'
 }
 
-function getStatusText(status: string) {
-  switch (status) {
-    case 'upcoming':
-      return '펀딩예정'
-    case 'live':
-      return '펀딩진행'
-    case 'succeeded':
-    case 'failed':
-      return '펀딩종료'
-    default:
-      return '펀딩진행'
+function formatDescriptionBy15Chars(text: string): string {
+  if (!text) return ''
+  const lines = text.split('\n')
+  const formattedLines: string[] = []
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed) continue
+
+    if (trimmed.length <= 16) {
+      formattedLines.push(trimmed)
+      continue
+    }
+
+    let current = ''
+    const words = trimmed.split(' ')
+
+    for (const word of words) {
+      if ((current + (current ? ' ' : '') + word).length <= 16) {
+        current += (current ? ' ' : '') + word
+      } else {
+        if (current) formattedLines.push(current)
+        current = word
+      }
+    }
+    if (current) formattedLines.push(current)
   }
+
+  return formattedLines.join('\n')
 }
 
 // 확정된 6가지 도서 분류 카테고리 리스트
@@ -44,12 +59,35 @@ const BOOK_GENRE_CATEGORIES = [
 function ProjectsContent() {
   const searchParams = useSearchParams()
   const searchKeyword = searchParams.get('search') || ''
-  
-  // 1. 펀딩 상황 분류 소메뉴: 'live'(펀딩진행) | 'succeeded'(펀딩종료) | 'upcoming'(펀딩예정) | 'all'
-  const [activeStatus, setActiveStatus] = useState<'live' | 'succeeded' | 'upcoming' | 'all'>('all')
-  
-  // 2. 좌측 통합 도서 분류 장르 필터
+
+  // 1. 펀딩 상황 분류: 'all' | 'live' | 'succeeded' | 'upcoming'
+  const [activeStatus, setActiveStatus] = useState<'all' | 'live' | 'succeeded' | 'upcoming'>('all')
+
+  // 2. 도서 카테고리 필터
   const [activeBookCategory, setActiveBookCategory] = useState<string>('all')
+
+  // 드롭다운 열림 상태
+  const [isStatusOpen, setIsStatusOpen] = useState(false)
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false)
+
+  const statusDropdownRef = useRef<HTMLDivElement>(null)
+  const categoryDropdownRef = useRef<HTMLDivElement>(null)
+
+  // 외부 클릭 시 드롭다운 닫기
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) {
+        setIsStatusOpen(false)
+      }
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+        setIsCategoryOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   // 수량 계산
   const totalProjectsCount = sampleProjects.length
@@ -65,14 +103,14 @@ function ProjectsContent() {
   }
 
   const filteredProjects = sampleProjects.filter(p => {
-    // 펀딩 상황 분류 필터링 (activeStatus가 'all'일 경우 펀딩상황 필터링 생략)
+    // 펀딩 상황 분류 필터링
     if (activeStatus !== 'all') {
       if (activeStatus === 'live' && p.status !== 'live') return false
       if (activeStatus === 'succeeded' && (p.status !== 'succeeded' && p.status !== 'failed')) return false
       if (activeStatus === 'upcoming' && p.status !== 'upcoming') return false
     }
 
-    // 확정 도서 분류 장르 필터링
+    // 도서 분류 장르 필터링
     if (activeBookCategory !== 'all') {
       if (activeBookCategory === '잡지/아트북' || activeBookCategory === '매거진/아트북') {
         if (p.category !== '잡지/아트북' && p.category !== '매거진/아트북') return false
@@ -92,7 +130,7 @@ function ProjectsContent() {
     }
     return true
   }).sort((a, b) => {
-    // [항상 적용할 규칙] 펀딩 진행(live) 중이면서 디데이가 가장 임박한 것(deadline 오름차순) 위주로 상단 배열
+    // 펀딩 진행(live) 중이면서 디데이가 가장 임박한 것 위주로 상단 배열
     if (a.status === 'live' && b.status !== 'live') return -1
     if (a.status !== 'live' && b.status === 'live') return 1
     if (a.status === 'live' && b.status === 'live') {
@@ -101,190 +139,249 @@ function ProjectsContent() {
     return 0
   })
 
-  return (
-    <div className="w-full bg-white text-[#1C4025]">
-      {/* 20px 높이 여백 공간 */}
-      <div className="w-full h-[20px] shrink-0" />
+  // 펀딩상태 라벨
+  const getStatusLabel = () => {
+    switch (activeStatus) {
+      case 'live':
+        return '펀딩진행'
+      case 'succeeded':
+        return '펀딩종료'
+      case 'upcoming':
+        return '펀딩예정'
+      default:
+        return '펀딩상태'
+    }
+  }
 
-      {/* 메인 영역: 좌측 스티키 소메뉴 + 우측 2단 프로젝트 카탈로그 */}
-      <main className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="flex flex-col md:flex-row gap-8 lg:gap-16 items-start">
-          
-          {/* 1. PC 및 모바일 스크롤 고정 소메뉴 영역 (업로드 이미지와 100% 동일 구조) */}
-          <aside className="w-full md:w-64 shrink-0 sticky top-16 md:top-24 z-30 bg-white/95 backdrop-blur-md py-4 border-b md:border-b-0 border-neutral-100/80">
-            
-            {/* 1-1. 맨 위: 총 프로젝트 10 (클릭 시 전체 프로젝트 노출) */}
-            <div id="total-projects" className="mb-6 sm:mb-8 scroll-mt-24">
+  return (
+    <div className="w-full bg-white text-[#1C4025] min-h-screen">
+      {/* 1. 상단 스크롤 고정 (Sticky) 필터 바: TOTAL 8, 펀딩상태 ▾, 카테고리 ▾ */}
+      <div className="sticky top-16 z-40 bg-white/95 backdrop-blur-md border-b border-neutral-100/90 py-4 transition-all">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-6 sm:gap-8">
+
+            {/* TOTAL 전체 개수 버튼 */}
+            <button
+              onClick={() => {
+                setActiveStatus('all')
+                setActiveBookCategory('all')
+              }}
+              className="flex items-center gap-1.5 text-base sm:text-lg font-black tracking-tight text-black hover:opacity-80 transition-opacity cursor-pointer"
+            >
+              <span>TOTAL</span>
+              <span className="text-[#c84b15] font-black">{totalProjectsCount}</span>
+            </button>
+
+            {/* 펀딩상태 드롭다운 */}
+            <div className="relative" ref={statusDropdownRef}>
               <button
                 onClick={() => {
-                  setActiveStatus('all')
-                  setActiveBookCategory('all')
+                  setIsStatusOpen(!isStatusOpen)
+                  setIsCategoryOpen(false)
                 }}
-                className={`text-xl sm:text-[26px] tracking-tight font-extrabold transition-all duration-200 text-left flex items-center gap-1.5 cursor-pointer ${
-                  activeStatus === 'all' && activeBookCategory === 'all'
-                    ? 'text-black opacity-100 font-black'
-                    : 'text-neutral-400 opacity-60 hover:opacity-100 hover:text-black font-extrabold'
-                }`}
-                title="클릭 시 전체 10개 프로젝트 보기"
+                className={`flex items-center gap-1.5 text-base sm:text-lg font-black tracking-tight transition-colors cursor-pointer ${activeStatus !== 'all' ? 'text-[#c84b15]' : 'text-black hover:text-black/70'
+                  }`}
               >
-                <span>총 프로젝트</span>
-                <span className="text-[#c84b15] font-black text-[13px] sm:text-[17px]">{totalProjectsCount}</span>
+                <span>{getStatusLabel()}</span>
+                <span className="text-xs transition-transform duration-200">
+                  {isStatusOpen ? '▲' : '▼'}
+                </span>
               </button>
-            </div>
 
-            {/* 모바일/PC 소메뉴 수직 및 반응형 구획 */}
-            <div className="flex flex-col gap-6 sm:gap-8 items-start w-full">
-              
-              {/* 1-2. 펀딩 상황 분류 (펀딩진행 4, 펀딩종료 2, 펀딩예정 4) */}
-              <div className="flex flex-col gap-2.5 items-start w-full">
-                <button
-                  onClick={() => setActiveStatus('live')}
-                  className={`text-lg sm:text-[20px] tracking-tight text-left transition-all duration-200 flex items-center gap-1.5 cursor-pointer w-full ${
-                    activeStatus === 'live'
-                      ? 'text-black font-black opacity-100'
-                      : 'text-neutral-400 font-black opacity-60 hover:opacity-100 hover:text-black'
-                  }`}
-                >
-                  <span>펀딩진행</span>
-                  <span className="text-[#c84b15] font-black text-xs sm:text-[13px]">{liveCount}</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveStatus('succeeded')}
-                  className={`text-lg sm:text-[20px] tracking-tight text-left transition-all duration-200 flex items-center gap-1.5 cursor-pointer w-full ${
-                    activeStatus === 'succeeded'
-                      ? 'text-black font-black opacity-100'
-                      : 'text-neutral-400 font-black opacity-60 hover:opacity-100 hover:text-black'
-                  }`}
-                >
-                  <span>펀딩종료</span>
-                  <span className="text-[#c84b15] font-black text-xs sm:text-[13px]">{endedCount}</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveStatus('upcoming')}
-                  className={`text-lg sm:text-[20px] tracking-tight text-left transition-all duration-200 flex items-center gap-1.5 cursor-pointer w-full ${
-                    activeStatus === 'upcoming'
-                      ? 'text-black font-black opacity-100'
-                      : 'text-neutral-400 font-black opacity-60 hover:opacity-100 hover:text-black'
-                  }`}
-                >
-                  <span>펀딩예정</span>
-                  <span className="text-[#c84b15] font-black text-xs sm:text-[13px]">{upcomingCount}</span>
-                </button>
-              </div>
-
-              {/* 1-3. 도서 장르 분류 (문학, 에세이, 인문/교양, 잡지/아트북, 만화/그림, 실용/취미/기타) */}
-              <div className="flex flex-col gap-2.5 items-start w-full pt-2">
-                {BOOK_GENRE_CATEGORIES.map((cat) => {
-                  const isSelected = activeBookCategory === cat.id
-                  const count = getCategoryCount(cat.id)
-
-                  return (
-                    <button
-                      key={cat.id}
-                      onClick={() => setActiveBookCategory(isSelected ? 'all' : cat.id)}
-                      className={`text-lg sm:text-[20px] tracking-tight text-left transition-all duration-200 flex items-center gap-1.5 cursor-pointer w-full ${
-                        isSelected 
-                          ? 'text-black font-black opacity-100' 
-                          : 'text-neutral-400 font-black opacity-60 hover:opacity-100 hover:text-black'
+              {/* 펀딩상태 드롭다운 메뉴 */}
+              {isStatusOpen && (
+                <div className="absolute left-0 mt-3 w-48 rounded-xl bg-white shadow-xl border border-neutral-200/80 py-2 z-50 animate-in fade-in-0 zoom-in-95">
+                  <button
+                    onClick={() => {
+                      setActiveStatus('all')
+                      setIsStatusOpen(false)
+                    }}
+                    className={`w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition-colors ${activeStatus === 'all'
+                        ? 'font-black text-black bg-neutral-50'
+                        : 'font-semibold text-neutral-600 hover:bg-neutral-50 hover:text-black'
                       }`}
-                    >
-                      <span>{cat.label}</span>
-                      <span className="text-[#c84b15] font-black text-xs sm:text-[13px]">{count}</span>
-                    </button>
-                  )
-                })}
-              </div>
-
+                  >
+                    <span>전체보기</span>
+                    <span className="text-[#c84b15] font-black text-xs">{totalProjectsCount}</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveStatus('live')
+                      setIsStatusOpen(false)
+                    }}
+                    className={`w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition-colors ${activeStatus === 'live'
+                        ? 'font-black text-black bg-neutral-50'
+                        : 'font-semibold text-neutral-600 hover:bg-neutral-50 hover:text-black'
+                      }`}
+                  >
+                    <span>펀딩진행</span>
+                    <span className="text-[#c84b15] font-black text-xs">{liveCount}</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveStatus('succeeded')
+                      setIsStatusOpen(false)
+                    }}
+                    className={`w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition-colors ${activeStatus === 'succeeded'
+                        ? 'font-black text-black bg-neutral-50'
+                        : 'font-semibold text-neutral-600 hover:bg-neutral-50 hover:text-black'
+                      }`}
+                  >
+                    <span>펀딩종료</span>
+                    <span className="text-[#c84b15] font-black text-xs">{endedCount}</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveStatus('upcoming')
+                      setIsStatusOpen(false)
+                    }}
+                    className={`w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition-colors ${activeStatus === 'upcoming'
+                        ? 'font-black text-black bg-neutral-50'
+                        : 'font-semibold text-neutral-600 hover:bg-neutral-50 hover:text-black'
+                      }`}
+                  >
+                    <span>펀딩예정</span>
+                    <span className="text-[#c84b15] font-black text-xs">{upcomingCount}</span>
+                  </button>
+                </div>
+              )}
             </div>
 
-          </aside>
+            {/* 카테고리 드롭다운 */}
+            <div className="relative" ref={categoryDropdownRef}>
+              <button
+                onClick={() => {
+                  setIsCategoryOpen(!isCategoryOpen)
+                  setIsStatusOpen(false)
+                }}
+                className={`flex items-center gap-1.5 text-base sm:text-lg font-black tracking-tight transition-colors cursor-pointer ${activeBookCategory !== 'all' ? 'text-[#c84b15]' : 'text-black hover:text-black/70'
+                  }`}
+              >
+                <span>{activeBookCategory === 'all' ? '카테고리' : activeBookCategory}</span>
+                <span className="text-xs transition-transform duration-200">
+                  {isCategoryOpen ? '▲' : '▼'}
+                </span>
+              </button>
 
-          {/* 2. 우측 프로젝트 카탈로그 (2단 직사각형 그리드) */}
-          <div className="flex-1 w-full space-y-6">
-            
-            {/* 2단 직사각형 프로젝트 카드 목록 */}
-            {filteredProjects.length === 0 ? (
-              <div className="text-center py-20 bg-[#F0EEE9] rounded-2xl space-y-4">
-                <p className="text-base font-medium text-neutral-600">선택한 분류에 해당되는 프로젝트가 없습니다.</p>
-                <button 
-                  onClick={() => {
-                    setActiveStatus('all')
-                    setActiveBookCategory('all')
-                  }}
-                  className="px-5 py-2 rounded-full bg-[#1C4025] text-white text-xs font-bold"
+              {/* 카테고리 드롭다운 메뉴 */}
+              {isCategoryOpen && (
+                <div className="absolute left-0 mt-3 w-56 rounded-xl bg-white shadow-xl border border-neutral-200/80 py-2 z-50 animate-in fade-in-0 zoom-in-95">
+                  <button
+                    onClick={() => {
+                      setActiveBookCategory('all')
+                      setIsCategoryOpen(false)
+                    }}
+                    className={`w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition-colors ${activeBookCategory === 'all'
+                        ? 'font-black text-black bg-neutral-50'
+                        : 'font-semibold text-neutral-600 hover:bg-neutral-50 hover:text-black'
+                      }`}
+                  >
+                    <span>전체보기</span>
+                    <span className="text-[#c84b15] font-black text-xs">{totalProjectsCount}</span>
+                  </button>
+                  {BOOK_GENRE_CATEGORIES.map((cat) => {
+                    const isSelected = activeBookCategory === cat.id
+                    const count = getCategoryCount(cat.id)
+                    return (
+                      <button
+                        key={cat.id}
+                        onClick={() => {
+                          setActiveBookCategory(cat.id)
+                          setIsCategoryOpen(false)
+                        }}
+                        className={`w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition-colors ${isSelected
+                            ? 'font-black text-black bg-neutral-50'
+                            : 'font-semibold text-neutral-600 hover:bg-neutral-50 hover:text-black'
+                          }`}
+                      >
+                        <span>{cat.label}</span>
+                        <span className="text-[#c84b15] font-black text-xs">{count}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {/* 2. 프로젝트 리스트 영역: 2단(2열) 가로형 직사각형 카드 레이아웃 */}
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10 pb-28">
+        {filteredProjects.length === 0 ? (
+          <div className="text-center py-24 bg-[#F2EEE9] rounded-2xl space-y-4">
+            <p className="text-base font-bold text-neutral-600">선택한 분류에 해당되는 프로젝트가 없습니다.</p>
+            <button
+              onClick={() => {
+                setActiveStatus('all')
+                setActiveBookCategory('all')
+              }}
+              className="px-6 py-2.5 rounded-full bg-[#1C4025] text-white text-xs font-bold hover:bg-[#1C4025]/90 transition-colors"
+            >
+              전체 프로젝트 보기
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+            {filteredProjects.map((project) => {
+              const percent = project.goal_amount > 0
+                ? Math.round((project.current_amount / project.goal_amount) * 100)
+                : 0
+
+              const daysRemaining = getDaysRemaining(project.deadline, project.status)
+              const formattedDescription = formatDescriptionBy15Chars(project.description)
+
+              return (
+                <Link
+                  key={project.id}
+                  href={`/projects/${project.id}`}
+                  className="block group"
                 >
-                  전체 펀딩진행 목록 보기
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-                {filteredProjects.map((project) => {
-                  const percent = project.goal_amount > 0 
-                    ? Math.round((project.current_amount / project.goal_amount) * 100)
-                    : 0
+                  <div className="relative bg-[#F0EEE9] pt-2 sm:pt-2.5 px-4 sm:px-6 pb-0 flex flex-col justify-between transition-all duration-300 hover:shadow-xl hover:-translate-y-1 min-h-[300px] sm:min-h-[330px] overflow-hidden">
 
-                  return (
-                    <Link 
-                      key={project.id}
-                      href={`/projects/${project.id}`}
-                      className="block group"
-                    >
-                      <div className="bg-[#F0EEE9] rounded-none pt-[5px] px-[5px] pb-0 flex flex-col justify-between items-center text-center overflow-hidden border border-black/5 shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 min-h-[380px] sm:min-h-[420px] cursor-pointer">
-                        
-                        {/* 1열: 상단 5px 여백 헤더 (왼쪽: D-Day / 펀딩예정 / 펀딩종료, 오른쪽: 달성률%) */}
-                        <div className="flex items-start justify-between w-full mb-2 text-[#c84b15] font-extrabold text-xl sm:text-2xl leading-none">
-                          {/* 왼쪽: D-Day / 펀딩예정 / 펀딩종료 */}
-                          <span className="tracking-tight">
-                            {getDaysRemaining(project.deadline, project.status)}
-                          </span>
+                    {/* 1. 카테고리 사각 뱃지: 영역 오른쪽, 위 끝에 100% 밀착 (top-0 right-0) */}
+                    <div className="absolute top-0 right-0 z-10">
+                      <span className="inline-block bg-[#1C4025] text-white text-xs sm:text-sm font-bold px-4 py-1.5 tracking-tight">
+                        {project.category || '도서'}
+                      </span>
+                    </div>
 
-                          {/* 오른쪽: 달성률 % */}
-                          <span className="tracking-tight">
-                            {percent}%
-                          </span>
-                        </div>
+                    {/* 2. 상단 좌측: 펀딩상태와 펀딩률 (상단 끝 여백을 2/3로 줄이고 가운뎃점 포함) */}
+                    <div className="flex items-center text-[#c84b15] font-extrabold text-base sm:text-lg tracking-tight mb-1">
+                      <span>{daysRemaining}</span>
+                      <span className="mx-1.5">•</span>
+                      <span>{percent}%</span>
+                    </div>
 
-                        {/* 2열: 도서 카테고리 알약 뱃지 */}
-                        <div className="mt-1 mb-1.5">
-                          <span className="inline-block bg-[#c84b15] text-white text-[11px] sm:text-xs font-bold px-3 py-1 rounded-full shadow-xs">
-                            {project.category || '도서'}
-                          </span>
-                        </div>
+                    {/* 3. 본문 영역: 좌측 책 표지(absolute bottom-0으로 바닥선 0px 완전 밀착, 10px 오른쪽 이동) + 우측 텍스트 */}
+                    <div className="relative flex-1 w-full flex items-center justify-end min-h-[220px] sm:min-h-[250px] mt-auto">
+                      {/* 좌측: 도서 표지 이미지 (카드 하단 끝 bottom-0에 100% 완전 밀착 & 10px 오른쪽 이동) */}
+                      <div className="absolute bottom-0 left-2 sm:left-5 translate-x-[10px] z-0 flex items-end">
+                        <img 
+                          src={project.cover_image_url} 
+                          alt={project.title} 
+                          className="h-[198px] sm:h-[242px] w-auto object-contain block align-bottom m-0 p-0 drop-shadow-[0_10px_18px_rgba(0,0,0,0.22)] transition-transform duration-300 group-hover:scale-[1.02]"
+                        />
+                      </div>
 
-                        {/* 3열: 메인 도서 타이틀 (현재 크기의 1.4배 확대) */}
-                        <h3 className="text-[25px] sm:text-[28px] font-extrabold text-[#1C4025] tracking-tight group-hover:text-[#c84b15] transition-colors px-3 line-clamp-1 mb-1.5">
+                      {/* 우측: 도서 제목 및 설명 (가운데 정렬 & 15글자 초과 시 줄바꿈) */}
+                      <div className="w-1/2 sm:w-7/12 ml-auto flex flex-col justify-center items-center text-center self-center px-2 py-4 z-10">
+                        <h3 className="text-xl sm:text-2xl font-black text-[#1C4025] tracking-tight leading-snug mb-3 group-hover:text-[#c84b15] transition-colors text-center">
                           {project.title}
                         </h3>
-
-                        {/* 4열: 도서 설명 */}
-                        <div className="px-4 mb-3 max-w-sm">
-                          <p className="text-xs sm:text-sm font-medium text-[#1C4025] leading-relaxed font-eulyoo whitespace-pre-line">
-                            {project.description}
-                          </p>
-                        </div>
-
-                        {/* 5열: 하단 입체 책 표지 이미지 (그림자 효과 + 바닥 1px 밀착) */}
-                        <div className="w-full flex justify-center items-end mt-auto mb-[1px]">
-                          <div className="relative shadow-[0_12px_24px_rgba(0,0,0,0.22)] transition-transform duration-300 group-hover:scale-[1.03]">
-                            <img 
-                              src={project.cover_image_url} 
-                              alt={project.title} 
-                              className="h-[180px] sm:h-[210px] w-auto object-contain block"
-                            />
-                          </div>
-                        </div>
-
+                        <p className="text-xs sm:text-sm font-medium text-[#1C4025]/90 leading-relaxed whitespace-pre-line text-center font-sans max-w-[280px]">
+                          {formattedDescription}
+                        </p>
                       </div>
-                    </Link>
-                  )
-                })}
-              </div>
-            )}
-          </div>
+                    </div>
 
-        </div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        )}
       </main>
     </div>
   )
@@ -292,8 +389,9 @@ function ProjectsContent() {
 
 export default function ProjectsPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-xs">로딩 중...</div>}>
+    <Suspense fallback={<div className="p-12 text-center text-sm font-bold text-[#1C4025]">로딩 중...</div>}>
       <ProjectsContent />
     </Suspense>
   )
 }
+
