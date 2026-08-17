@@ -120,7 +120,7 @@ export default function Header({ initialUser }: HeaderProps) {
   const siteNavItems = [
     { label: '소개', href: '/about' },
     { label: '펀딩', href: '/funding' },
-    { label: '컨텐츠', href: '/contents' },
+    { label: '컨텐츠', href: '/originals' },
     { label: '게시판', href: '/board' },
   ]
 
@@ -173,8 +173,8 @@ export default function Header({ initialUser }: HeaderProps) {
                   ? pathname === '/about'
                   : item.href === '/funding'
                     ? pathname.startsWith('/funding') || pathname.startsWith('/projects')
-                    : item.href === '/contents'
-                      ? pathname.startsWith('/contents') || pathname.startsWith('/studio')
+                    : item.href === '/originals'
+                    ? pathname.startsWith('/originals') || pathname.startsWith('/contents') || pathname.startsWith('/studio')
                       : item.href === '/board'
                         ? pathname.startsWith('/board') || pathname === '/notice' || pathname === '/guide' || pathname === '/terms' || pathname === '/privacy'
                         : pathname === item.href
