@@ -4,16 +4,15 @@ import Link from 'next/link'
 import { ReactNode } from 'react'
 
 interface NoticeLayoutProps {
-  currentTab: 'notice' | 'guide' | 'terms' | 'privacy' | 'about'
+  currentTab: 'notice' | 'guide' | 'terms' | 'privacy'
   children: ReactNode
 }
 
 const NOTICE_SUB_MENUS = [
-  { id: 'notice', label: '공지 및 안내', href: '/notice' },
-  { id: 'guide', label: '창작가 가이드', href: '/guide' },
+  { id: 'notice', label: '공지 및 안내', href: '/board' },
+  { id: 'guide', label: '창작자 가이드', href: '/guide' },
   { id: 'terms', label: '약관 및 정책', href: '/terms' },
   { id: 'privacy', label: '개인정보 처리방침', href: '/privacy' },
-  { id: 'about', label: 'MOOKK 소개', href: '/about' },
 ] as const
 
 export default function NoticeLayout({ currentTab, children }: NoticeLayoutProps) {

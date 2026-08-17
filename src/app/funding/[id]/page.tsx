@@ -1,13 +1,13 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { sampleProjects, findProjectByIdOrNumber } from '@/data/projectsData'
-import ProjectDetailClient from './ProjectDetailClient'
+import ProjectDetailClient from '@/app/projects/[id]/ProjectDetailClient'
 
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function ProjectDetailPage({ params }: PageProps) {
+export default async function FundingDetailPage({ params }: PageProps) {
   const resolvedParams = await params
   const id = resolvedParams.id
 
@@ -31,10 +31,10 @@ export default async function ProjectDetailPage({ params }: PageProps) {
       }
     }
   } catch (e) {
-    console.error("Auth check failed in detail page:", e)
+    console.error("Auth check failed in funding detail page:", e)
   }
 
-  // 2. sampleProjects 매칭
+  // 2. sampleProjects 매칭 (1~8 숫자 인덱스 또는 ID 매칭)
   const matched = findProjectByIdOrNumber(id)
   if (matched) {
     const matchedSample = matched.project
@@ -73,7 +73,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
       if (projectError || !projectData) {
         console.error("Project not found in DB:", projectError)
-        return redirect('/projects')
+        return redirect('/funding')
       }
 
       project = projectData
@@ -96,8 +96,8 @@ export default async function ProjectDetailPage({ params }: PageProps) {
       pledgesCount = pledgesError ? 0 : (count || 0)
 
     } catch (e) {
-      console.error("Database query error in detail page:", e)
-      return redirect('/projects')
+      console.error("Database query error in funding detail page:", e)
+      return redirect('/funding')
     }
   }
 
@@ -110,4 +110,3 @@ export default async function ProjectDetailPage({ params }: PageProps) {
     />
   )
 }
-

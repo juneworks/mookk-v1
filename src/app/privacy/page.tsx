@@ -18,27 +18,10 @@ export default function PrivacyPage() {
           </p>
         </div>
 
-        <div className="bg-white rounded-none p-6 border border-black/5 space-y-6 text-xs sm:text-sm text-[#1C4025]/90 leading-relaxed shadow-2xs">
-          <div>
-            <h2 className="font-bold text-base text-[#1C4025] mb-2">1. 수집하는 개인정보 항목</h2>
-            <p className="text-neutral-600">
-              회사는 회원가입, 후원 및 리워드 배송, 창작자 정산 서비스 제공을 위해 최소한의 개인정보(이메일, 이름, 연락처, 배송지 주소)를 수집합니다.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="font-bold text-base text-[#1C4025] mb-2">2. 개인정보의 수집 및 이용 목적</h2>
-            <p className="text-neutral-600">
-              수집된 개인정보는 후원 예약 내역 관리, 펀딩 성공 시 리워드 상품 배송, 창작자 서비스 이용자 확인 및 고객 문의 응대를 위해 사용됩니다.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="font-bold text-base text-[#1C4025] mb-2">3. 개인정보의 보유 및 파기</h2>
-            <p className="text-neutral-600">
-              이용자의 개인정보는 원칙적으로 개인정보의 수집 및 이용목적이 달성되면 지체 없이 파기하며, 관계법령에 의해 보존할 필요가 있는 경우 지정된 기간 동안 보관합니다.
-            </p>
-          </div>
+        <div className="bg-white rounded-none h-[400px] flex items-center justify-center border border-black/5 text-center shadow-2xs">
+          <p className="text-base sm:text-lg font-bold text-neutral-500">
+            준비 중입니다.
+          </p>
         </div>
       </div>
     </NoticeLayout>

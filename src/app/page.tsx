@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { sampleProjects } from '@/data/projectsData'
+import { sampleProjects, getProjectNumber } from '@/data/projectsData'
 
 export default function Home() {
   // 실시간 펀딩 진행 중인 프로젝트 (4개)
@@ -19,7 +19,7 @@ export default function Home() {
         - 10% 어두운 오버레이 처리로 텍스트 및 책 오브젝트 가독성 극대화
         - 브라우저 너비에 따라 3열의 상대적 위치, 텍스트 크기, 이미지 높이가 비례 축소/확대
       */}
-      <section className="relative w-full min-h-[clamp(580px,65vw,840px)] flex items-center justify-center pt-24 sm:pt-28 pb-[clamp(2.5rem,5vw,5rem)] px-[clamp(1rem,4vw,4rem)] overflow-hidden">
+      <section className="relative w-full min-h-[clamp(520px,58vw,770px)] flex items-end justify-center pt-24 sm:pt-28 pb-0 px-[clamp(1rem,4vw,4rem)] overflow-hidden">
         {/* 1. 풀 와이드 배경 이미지 레이어 (001~004 매칭 & 부드러운 크로스페이드) */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           {liveProjects.map((project, index) => (
@@ -38,18 +38,17 @@ export default function Home() {
         </div>
 
         {/* 2. 전면 3열 인터랙티브 컨텐츠 (A24 Fluid Scaling) */}
-        <div className="relative z-20 mx-auto max-w-[1440px] w-full grid grid-cols-12 gap-[clamp(0.75rem,2.5vw,3rem)] items-center">
+        <div className="relative z-20 mx-auto max-w-[1440px] w-full grid grid-cols-12 gap-[clamp(0.75rem,2.5vw,3rem)] items-end">
 
-          {/* 1열 (좌측 - 4 cols): 펀딩중 프로젝트 제목 목록 (기본 #9e9e9e, 호버 시 text-white / 1.4배 크기) */}
-          <div className="col-span-12 md:col-span-4 flex flex-col space-y-[clamp(0.8rem, 1.6vw, 1.8rem)] items-start justify-center">
+          {/* 1열 (좌측 - 4 cols): 펀딩중 프로젝트 제목 목록 (맨 위 제목 위치 기준 고정 & 타이틀 간격 2/3 축소) */}
+          <div className="col-span-12 md:col-span-4 flex flex-col space-y-[clamp(0.33rem,0.7vw,0.8rem)] items-start justify-end pb-[clamp(2.5rem,5.65vw,5rem)]">
             {liveProjects.map((project, index) => {
               const isActive = index === activeIndex
               return (
-                <Link
+                <div
                   key={project.id}
-                  href={`/projects/${project.id}`}
                   onMouseEnter={() => setActiveIndex(index)}
-                  className={`font-black tracking-tight leading-[1.15] transition-all duration-200 cursor-pointer drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)] ${isActive
+                  className={`font-black tracking-tight leading-[1.15] transition-all duration-200 cursor-default drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)] ${isActive
                       ? 'text-white translate-x-1.5'
                       : 'text-[#9e9e9e] hover:text-white hover:translate-x-1.5'
                     }`}
@@ -58,56 +57,61 @@ export default function Home() {
                   }}
                 >
                   {project.title}
-                </Link>
+                </div>
               )
             })}
           </div>
 
-          {/* 2열 (중앙 - 4 cols / 완벽한 화면 50% 정중앙): 1.2배 확대 대형 책 커버 이미지 */}
-          <div className="col-span-12 md:col-span-4 flex justify-center items-center py-[clamp(0.5rem,1.5vw,1.5rem)]">
+          {/* 2열 (중앙 - 4 cols): 책 커버이미지 하단 밀착 및 히어로 배경 대비 2/3(66.7%) 높이 차지 */}
+          <div className="col-span-12 md:col-span-4 flex justify-center items-end self-end">
             <Link
-              href={`/projects/${activeProject?.id}`}
+              href={`/funding/${getProjectNumber(activeProject?.id)}`}
               className="block group cursor-pointer relative"
             >
               <img
                 key={activeProject?.id}
                 src={activeProject?.cover_image_url}
                 alt={activeProject?.title}
-                className="w-auto object-contain block shadow-[0_20px_40px_rgba(0,0,0,0.5),0_10px_20px_rgba(0,0,0,0.35),0_30px_60px_rgba(0,0,0,0.3)] filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.45)] drop-shadow-[0_40px_50px_rgba(0,0,0,0.35)] transition-all duration-300 group-hover:scale-[1.03] group-hover:shadow-[0_25px_50px_rgba(0,0,0,0.65),0_15px_30px_rgba(0,0,0,0.45),0_40px_80px_rgba(0,0,0,0.4)] group-hover:drop-shadow-[0_30px_40px_rgba(0,0,0,0.6)] animate-in fade-in zoom-in-95 duration-200"
+                className="w-auto object-contain block filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.35)] transition-all duration-300 group-hover:scale-[1.03] group-hover:drop-shadow-[0_20px_35px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in-95 duration-200"
                 style={{
-                  height: 'clamp(288px, 36vw, 530px)',
-                  maxHeight: 'min(74vh, 550px)',
+                  height: 'clamp(385px, 43.3vw, 560px)',
+                  maxHeight: 'min(66.7vh, 560px)',
                 }}
               />
             </Link>
           </div>
 
-          {/* 3열 (우측 - 4 cols): 카테고리 뱃지 & 설명 문구 (1.4배 크기 & Center Axis Alignment) */}
-          <div className="col-span-12 md:col-span-4 flex flex-col items-center justify-center text-center space-y-[clamp(0.9rem,1.8vw,1.8rem)]">
-            {/* 카테고리 사각 뱃지: 흰색 바탕에 내부 폰트 #1c4025 (1.4배) */}
-            <div>
-              <span
-                className="inline-block bg-white text-[#1C4025] font-extrabold tracking-tight shadow-md"
-                style={{
-                  fontSize: 'clamp(0.95rem, 1.25vw, 1.2rem)',
-                  padding: 'clamp(0.35rem, 0.55vw, 0.525rem) clamp(1.05rem, 1.6vw, 1.65rem)',
-                }}
-              >
-                {activeProject?.category || '도서'}
-              </span>
-            </div>
-
-            {/* 도서 설명 문구: 1.2배 두꺼워진 폰트 (font-semibold / font-bold 급 600~700 두께) */}
-            <p
-              className="font-bold text-white leading-[1.65] whitespace-pre-line text-center font-sans drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] animate-in fade-in duration-200"
-              style={{
-                fontSize: 'clamp(1.1rem, 1.45vw, 1.35rem)',
-                maxWidth: 'clamp(260px, 26vw, 380px)',
-                fontWeight: 650,
-              }}
+          {/* 3열 (우측 - 4 cols): 설명과 화살표가 있는 흰 배경 박스 링크 (모바일 시 상단 여백 mt-8 추가로 겹침 방지) */}
+          <div className="col-span-12 md:col-span-4 flex flex-col items-center md:items-start justify-center self-center mt-8 sm:mt-10 md:mt-0 pb-10 md:pb-[clamp(2rem,5vw,4.5rem)] relative z-10">
+            <Link
+              href={`/funding/${getProjectNumber(activeProject?.id)}`}
+              className="group block bg-white p-[clamp(1.25rem,2vw,1.75rem)] w-full max-w-[390px] transition-all duration-300 hover:scale-[1.03] cursor-pointer"
             >
-              {activeProject?.description}
-            </p>
+              <div className="flex items-center justify-between gap-4">
+                <p
+                  className="font-extrabold text-[#111111] leading-[1.5] text-left font-sans break-keep animate-in fade-in duration-200"
+                  style={{
+                    fontSize: 'clamp(0.95rem, 1.22vw, 1.15rem)',
+                    wordBreak: 'keep-all',
+                  }}
+                >
+                  {activeProject?.description}
+                </p>
+                <svg
+                  className="w-6 h-6 flex-shrink-0 text-black transition-transform duration-300 group-hover:translate-x-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="square"
+                    strokeLinejoin="miter"
+                    strokeWidth="2.2"
+                    d="M4 12h15m-5-5l5 5-5 5"
+                  />
+                </svg>
+              </div>
+            </Link>
           </div>
 
         </div>
@@ -173,7 +177,7 @@ export default function Home() {
         - 좌측: "책과 스토리를 함께 만듭니다" 헤드라인(#1c4025) 및 studio MOOKK 이어진 화살표 링크
         - 우측: 화이트 스튜디오 작업실 이미지
       */}
-      <section className="w-full bg-white py-[clamp(3.5rem,8vw,7.5rem)] px-[clamp(1.5rem,5vw,5rem)] border-t border-neutral-200/60">
+      <section className="w-full bg-white py-[clamp(3.5rem,8vw,7.5rem)] px-[clamp(1.5rem,5vw,5rem)]">
         <div className="mx-auto max-w-[1440px] w-full">
           <Link
             href="/studio"

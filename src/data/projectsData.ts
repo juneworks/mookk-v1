@@ -46,7 +46,7 @@ export const sampleProjects: ProjectData[] = [
     id: 'mookk-real-2',
     title: '시인들의 러브레터',
     subtitle: '시대를 뛰어넘어 이어지는 시인 12인의 헌정 서간집',
-    description: '한국 근대시 작가 12명 시인의\n연인과 주고받은 친필 편지를\n양장본으로 복원한 헌정 서간집',
+    description: '한국 근대시 작가 12명 시인이\n연인과 실제 주고받은 편지를\n양장본 책으로 복원한 헌정 서간집',
     detail_story: `## 📖 책 소개
 《시인들의 러브레터》는 한국 근현대문학을 대표하는 시인 12인이 아내, 연인, 친구에게 보낸 친필 편지와 시적 감성이 물씬 풍기는 서간들을 한데 엮은 프리미엄 종이책 양장본입니다.
 
@@ -394,3 +394,27 @@ export const mockPledges = [
     }
   }
 ]
+
+export function getProjectNumber(id: string): number {
+  const index = sampleProjects.findIndex((p) => p.id === id)
+  return index >= 0 ? index + 1 : 1
+}
+
+export function findProjectByIdOrNumber(idOrNumber: string): { project: ProjectData; projectNumber: number } | undefined {
+  const parsedNumber = parseInt(idOrNumber, 10)
+  if (!isNaN(parsedNumber) && String(parsedNumber) === idOrNumber.trim() && parsedNumber >= 1 && parsedNumber <= sampleProjects.length) {
+    return {
+      project: sampleProjects[parsedNumber - 1],
+      projectNumber: parsedNumber,
+    }
+  }
+  const index = sampleProjects.findIndex((p) => p.id === idOrNumber)
+  if (index >= 0) {
+    return {
+      project: sampleProjects[index],
+      projectNumber: index + 1,
+    }
+  }
+  return undefined
+}
+
