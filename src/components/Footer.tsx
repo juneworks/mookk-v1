@@ -35,7 +35,7 @@ export default function Footer() {
               </div>
               <div>
                 <Link href="/originals" className="text-sm sm:text-[15px] font-bold text-white/70 hover:text-white active:text-white transition-colors block">
-                  MOOKK 컨텐츠
+                  MOOKK 오리지널
                 </Link>
               </div>
             </div>

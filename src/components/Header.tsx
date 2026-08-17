@@ -120,7 +120,7 @@ export default function Header({ initialUser }: HeaderProps) {
   const siteNavItems = [
     { label: '소개', href: '/about' },
     { label: '펀딩', href: '/funding' },
-    { label: '컨텐츠', href: '/originals' },
+    { label: '오리지널', href: '/originals' },
     { label: '게시판', href: '/board' },
   ]
 
