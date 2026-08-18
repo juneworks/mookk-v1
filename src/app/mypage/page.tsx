@@ -4,11 +4,45 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { calculateSettlementFee, FeeBreakdown } from '@/utils/fee'
 import { mockPledges, mockProjects } from '@/data/projectsData'
+import { createClient } from '@/utils/supabase/client'
 
 export default function MyPage() {
+  const supabase = createClient()
+  const [currentUser, setCurrentUser] = useState<{ name: string; email: string; role: string } | null>(null)
   const [activeTab, setActiveTab] = useState<'backer' | 'creator'>('backer')
   const [isCsvDownloading, setIsCsvDownloading] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function loadCurrentUser() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data: profile } = await supabase
+            .from('User')
+            .select('*')
+            .eq('id', user.id)
+            .single()
+
+          if (profile) {
+            setCurrentUser(profile)
+            if (profile.role === 'creator') {
+              setActiveTab('creator')
+            }
+          } else {
+            setCurrentUser({
+              name: user.user_metadata?.name || '사용자',
+              email: user.email || '',
+              role: user.user_metadata?.role || 'backer'
+            })
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load current user in mypage:', err)
+      }
+    }
+    loadCurrentUser()
+  }, [supabase])
   
   // 취소 모달 상태
   const [cancelTargetPledgeId, setCancelTargetPledgeId] = useState<string | null>(null)
@@ -138,8 +172,12 @@ export default function MyPage() {
             <span className="text-xs font-bold text-[#c84b15] uppercase tracking-wider bg-[#c84b15]/10 px-3 py-1 rounded-full">
               MY DASHBOARD
             </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold mt-2">김준 님의 마이페이지</h1>
-            <p className="text-xs text-[#1C4025]/70 mt-1">jun@mookk.com · 창작자 & 후원자 회원</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold mt-2">
+              {currentUser?.name || '사용자'} 님의 마이페이지
+            </h1>
+            <p className="text-xs text-[#1C4025]/70 mt-1">
+              {currentUser?.email || '로그인된 사용자'} · {currentUser?.role === 'creator' ? '창작자 회원' : currentUser?.role === 'admin' ? '관리자 회원' : '후원자 회원'}
+            </p>
           </div>
 
           {/* 탭 전환 버튼 */}
