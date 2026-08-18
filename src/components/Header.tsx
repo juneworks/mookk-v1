@@ -20,7 +20,7 @@ interface HeaderProps {
 export default function Header({ initialUser }: HeaderProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const isMain = pathname === '/'
+  const isMain = pathname === '/' || pathname === '/about'
   const supabase = createClient()
   const [user, setUser] = useState<UserProfile | null>(initialUser)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -130,7 +130,7 @@ export default function Header({ initialUser }: HeaderProps) {
         {/* 0. 최상단 베타 안내 띠 배너 (상하 1px 여백 추가) */}
         <div className="w-full bg-[#c84b15] py-[2.5px] sm:py-[3px] px-4 text-center flex items-center justify-center leading-none">
           <Link 
-            href="/about" 
+            href="/board/1" 
             className="inline-flex items-center justify-center gap-1.5 text-[11px] sm:text-[12.6px] font-normal text-white hover:opacity-90 transition-opacity leading-none"
           >
             <span>MOOKK은 현재 베타 운영 중이며, 일부는 샘플 페이지입니다</span>
